@@ -28,11 +28,11 @@ namespace SWD392.Manim.API.Extensions
             return connectionString ?? "";
         }
 
-        public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration config)
-        {
+        //public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration config)
+        //{
 
-            return services;
-        }
+        //    return services;
+        //}
         private static string CreateClientId(IConfiguration configuration)
         {
             var clientId = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CLIENT_ID")
@@ -111,8 +111,8 @@ namespace SWD392.Manim.API.Extensions
         {
             services.AddRepository();
             services.AddAutoMapper();
-            services.AddServices();
-            services.SeedData();
+            //services.AddServices();
+            //services.SeedData();
             services.AddAutoMapper();
         }
         public static void AddRepository(this IServiceCollection services)
@@ -132,25 +132,25 @@ namespace SWD392.Manim.API.Extensions
             services.AddAutoMapper(typeof(ParameterProfile).Assembly);
 
         }
-        public static void AddServices(this IServiceCollection services)
-        {
-            //// Lấy assembly hiện tại
-            //Assembly assembly = Assembly.GetExecutingAssembly();
-            //// Tìm tất cả các loại có interface và đăng ký chúng
-            //List<ServicesType> serviceTypes = assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract).SelectMany(t => t.GetInterfaces(), (t, i) => new ServicesType { Implementation = t, Interface = i }).ToList();
-            //foreach (var service in serviceTypes)
-            //{
-            //    // Đăng ký dịch vụ với scope phù hợp (Scoped, Transient, Singleton)
-            //    services.AddScoped(service.Interface!, service.Implementation!);
-            //}
-        }
-        public static void SeedData(this IServiceCollection services)
-        {
-            //using var scope = services.BuildServiceProvider().CreateScope();
-            //using var context = scope.ServiceProvider.GetRequiredService<Swd392Context>();
-            //var initialiser = new SeedData(context);
-            //initialiser.SeedingData();
-        }
+        //public static void AddServices(this IServiceCollection services)
+        //{
+        //    //// Lấy assembly hiện tại
+        //    //Assembly assembly = Assembly.GetExecutingAssembly();
+        //    //// Tìm tất cả các loại có interface và đăng ký chúng
+        //    //List<ServicesType> serviceTypes = assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract).SelectMany(t => t.GetInterfaces(), (t, i) => new ServicesType { Implementation = t, Interface = i }).ToList();
+        //    //foreach (var service in serviceTypes)
+        //    //{
+        //    //    // Đăng ký dịch vụ với scope phù hợp (Scoped, Transient, Singleton)
+        //    //    services.AddScoped(service.Interface!, service.Implementation!);
+        //    //}
+        //}
+        //public static void SeedData(this IServiceCollection services)
+        //{
+        //    //using var scope = services.BuildServiceProvider().CreateScope();
+        //    //using var context = scope.ServiceProvider.GetRequiredService<Swd392Context>();
+        //    //var initialiser = new SeedData(context);
+        //    //initialiser.SeedingData();
+        //}
         public class ServicesType
         {
             public Type? Implementation { get; set; }
