@@ -24,7 +24,7 @@ try
         x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
     builder.Services.AddDatabase();
-    builder.Services.AddServices(builder.Configuration);
+    //builder.Services.AddServices(builder.Configuration);
     builder.Services.AddApplication(builder.Configuration);
     builder.Services.AddGoogleAuthentication();
     builder.Services.AddAuthentication();
@@ -35,13 +35,6 @@ try
     builder.Services.AddSwaggerGen();
     //Auto Mapper
     var app = builder.Build();
-
-    // Configure the HTTP request pipeline.
-    //app.UseSwagger(options =>
-    //{
-    //    options.SerializeAsV2 = true;
-    //});
-    app.UseSwagger();
     // Configure the HTTP request pipeline
     if (app.Environment.IsDevelopment())
     {
@@ -60,11 +53,12 @@ try
     app.UseMiddleware<ExceptionMiddleware>();
     app.UseMiddleware<PermissionMiddleware>();
     app.UseHttpsRedirection();
+    app.UseRouting();
     app.UseCors(CorsConstant.PolicyName);
+    app.UseSwagger();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers(); 
-    app.UseRouting();
     app.Run();
 }
 catch (Exception exception)
