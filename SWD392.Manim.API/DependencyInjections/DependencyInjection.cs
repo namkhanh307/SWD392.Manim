@@ -111,7 +111,7 @@ namespace SWD392.Manim.API.Extensions
         {
             services.AddRepository();
             services.AddAutoMapper();
-            //services.AddServices();
+            services.AddServices();
             //services.SeedData();
             services.AddAutoMapper();
         }
@@ -132,25 +132,33 @@ namespace SWD392.Manim.API.Extensions
             services.AddAutoMapper(typeof(ParameterProfile).Assembly);
 
         }
-        //public static void AddServices(this IServiceCollection services)
-        //{
-        //    //// Lấy assembly hiện tại
-        //    //Assembly assembly = Assembly.GetExecutingAssembly();
-        //    //// Tìm tất cả các loại có interface và đăng ký chúng
-        //    //List<ServicesType> serviceTypes = assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract).SelectMany(t => t.GetInterfaces(), (t, i) => new ServicesType { Implementation = t, Interface = i }).ToList();
-        //    //foreach (var service in serviceTypes)
-        //    //{
-        //    //    // Đăng ký dịch vụ với scope phù hợp (Scoped, Transient, Singleton)
-        //    //    services.AddScoped(service.Interface!, service.Implementation!);
-        //    //}
-        //}
-        //public static void SeedData(this IServiceCollection services)
-        //{
-        //    //using var scope = services.BuildServiceProvider().CreateScope();
-        //    //using var context = scope.ServiceProvider.GetRequiredService<Swd392Context>();
-        //    //var initialiser = new SeedData(context);
-        //    //initialiser.SeedingData();
-        //}
+        public static void AddServices(this IServiceCollection services)
+        {
+            // Load the assembly of the Services project
+            Assembly servicesAssembly = Assembly.Load("SWD392.Manim.Services"); // Replace with your actual Services project assembly name
+
+            // Find all classes in the Services assembly with interfaces and register them
+            var serviceTypes = servicesAssembly
+                .GetTypes()
+                .Where(t => t.IsClass && !t.IsAbstract)
+                .SelectMany(t => t.GetInterfaces(), (t, i) => new { Implementation = t, Interface = i })
+                .Where(t => t.Interface != null) // Ensure the type has an interface
+                .ToList();
+
+            foreach (var service in serviceTypes)
+            {
+                // Register the service with scoped lifetime
+                services.AddScoped(service.Interface, service.Implementation);
+            }
+        }
+
+        public static void SeedData(this IServiceCollection services)
+        {
+            //using var scope = services.BuildServiceProvider().CreateScope();
+            //using var context = scope.ServiceProvider.GetRequiredService<Swd392Context>();
+            //var initialiser = new SeedData(context);
+            //initialiser.SeedingData();
+        }
         public class ServicesType
         {
             public Type? Implementation { get; set; }
