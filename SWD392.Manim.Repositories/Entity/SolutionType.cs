@@ -9,7 +9,5 @@ namespace SWD392.Manim.Repositories.Entity
         public string ProblemId { get; set; } = string.Empty;
         public virtual Problem? Problem { get; set; }
         public virtual Solution? Solution { get; set; }
-
-        public virtual ICollection<SolutionParameter> SolutionParameters { get; set; } = new List<SolutionParameter>();
     }
 }

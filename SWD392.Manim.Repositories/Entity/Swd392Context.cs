@@ -44,7 +44,7 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
         }
         modelBuilder.Entity<SolutionParameter>(entity =>
         {
-            entity.HasKey(sp => new { sp.ParameterId, sp.SolutionTypeId });
+            entity.HasKey(sp => new { sp.ParameterId, sp.SolutionId });
         });
         modelBuilder.Entity<ApplicationUser>()
             .HasOne(a => a.Wallet)
