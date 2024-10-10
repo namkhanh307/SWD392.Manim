@@ -9,6 +9,7 @@ using SWD392.Manim.Repositories;
 using SWD392.Manim.Services.Mapper;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.Google;
+using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Extensions
 {
@@ -135,21 +136,33 @@ namespace SWD392.Manim.API.Extensions
         public static void AddServices(this IServiceCollection services)
         {
             // Load the assembly of the Services project
-            Assembly servicesAssembly = Assembly.Load("SWD392.Manim.Services"); // Replace with your actual Services project assembly name
+            //Assembly servicesAssembly = Assembly.Load("SWD392.Manim.Services"); // Replace with your actual Services project assembly name
 
-            // Find all classes in the Services assembly with interfaces and register them
-            var serviceTypes = servicesAssembly
-                .GetTypes()
-                .Where(t => t.IsClass && !t.IsAbstract)
-                .SelectMany(t => t.GetInterfaces(), (t, i) => new { Implementation = t, Interface = i })
-                .Where(t => t.Interface != null) // Ensure the type has an interface
-                .ToList();
+            //// Find all classes in the Services assembly with interfaces and register them
+            //var serviceTypes = servicesAssembly
+            //    .GetTypes()
+            //    .Where(t => t.IsClass && !t.IsAbstract)
+            //    .SelectMany(t => t.GetInterfaces(), (t, i) => new { Implementation = t, Interface = i })
+            //    .Where(t => t.Interface != null) // Ensure the type has an interface
+            //    .ToList();
 
-            foreach (var service in serviceTypes)
-            {
-                // Register the service with scoped lifetime
-                services.AddScoped(service.Interface, service.Implementation);
-            }
+            //foreach (var service in serviceTypes)
+            //{
+            //    // Register the service with scoped lifetime
+            //    services.AddScoped(service.Interface, service.Implementation);
+            //}
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IChapterService, ChapterService>();
+            services.AddScoped<IGoogleAuthenticationService, AuthService>();
+            services.AddScoped<IParameterService, ParameterService>();
+            services.AddScoped<IPayService, PayService>();
+            services.AddScoped<IProblemService, ProblemService>();
+            services.AddScoped<ISolutionService, SolutionService>();
+            services.AddScoped<ISolutionTypeService, SolutionTypeService>();
+            services.AddScoped<ISolutionOutputService, SolutionOutputService>();
+            services.AddScoped<ISubjectService, SubjectService>();
+            services.AddScoped<ITopicService, TopicService>();
         }
 
         public static void SeedData(this IServiceCollection services)
