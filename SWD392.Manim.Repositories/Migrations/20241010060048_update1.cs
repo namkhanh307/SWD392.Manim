@@ -447,7 +447,7 @@ namespace SWD392.Manim.Repositories.Migrations
                         column: x => x.SolutionId,
                         principalTable: "Solutions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(

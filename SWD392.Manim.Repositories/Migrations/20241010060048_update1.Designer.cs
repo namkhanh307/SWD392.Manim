@@ -12,7 +12,7 @@ using SWD392.Manim.Repositories.Entity;
 namespace SWD392.Manim.Repositories.Migrations
 {
     [DbContext(typeof(Swd392Context))]
-    [Migration("20241010055616_update1")]
+    [Migration("20241010060048_update1")]
     partial class update1
     {
         /// <inheritdoc />
@@ -870,7 +870,7 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.HasOne("SWD392.Manim.Repositories.Entity.Solution", "Solution")
                         .WithMany("SolutionParameters")
                         .HasForeignKey("SolutionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Parameter");

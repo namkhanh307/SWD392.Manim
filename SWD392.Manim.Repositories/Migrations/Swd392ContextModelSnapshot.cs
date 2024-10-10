@@ -867,7 +867,7 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.HasOne("SWD392.Manim.Repositories.Entity.Solution", "Solution")
                         .WithMany("SolutionParameters")
                         .HasForeignKey("SolutionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Parameter");

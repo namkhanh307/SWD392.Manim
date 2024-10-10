@@ -42,10 +42,21 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
                 entityType.SetTableName(tableName.Substring(6));
             }
         }
-        modelBuilder.Entity<SolutionParameter>(entity =>
-        {
-            entity.HasKey(sp => new { sp.ParameterId, sp.SolutionId });
-        });
+        modelBuilder.Entity<SolutionParameter>()
+            .HasKey(sp => new { sp.ParameterId, sp.SolutionId });
+
+        modelBuilder.Entity<SolutionParameter>()
+            .HasOne(sp => sp.Solution)
+            .WithMany(s => s.SolutionParameters)
+            .HasForeignKey(sp => sp.SolutionId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+
+        modelBuilder.Entity<SolutionParameter>()
+            .HasOne(sp => sp.Parameter)
+            .WithMany(p => p.SolutionParameters)
+            .HasForeignKey(sp => sp.ParameterId)
+            .OnDelete(DeleteBehavior.Cascade); // Allows cascade delete for Parameter
+
         modelBuilder.Entity<ApplicationUser>()
             .HasOne(a => a.Wallet)
             .WithOne(w => w.User)
