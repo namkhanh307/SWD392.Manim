@@ -51,6 +51,7 @@ try
     }
 
     app.UseMiddleware<ExceptionMiddleware>();
+    app.UseMiddleware<PermissionMiddleware>();
     app.UseHttpsRedirection();
     app.UseRouting();
     app.UseCors(CorsConstant.PolicyName);
