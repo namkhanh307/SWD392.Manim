@@ -48,8 +48,15 @@ namespace SWD392.Manim.Services.Services
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now
             };
+            Wallet wallet = new Wallet()
+            {
+                UserId = newUser.Id,
+                Balance = 0,
+                CreatedAt = DateTime.Now
+            };
             await _unitOfWork.GetRepository<ApplicationUserRoles>().InsertAsync(userRoles);
             await _unitOfWork.GetRepository<ApplicationUser>().InsertAsync(newUser);
+            await _unitOfWork.GetRepository<Wallet>().InsertAsync(wallet);
             await _unitOfWork.SaveAsync();
             return new GetSignInByGoogleVM()
             {

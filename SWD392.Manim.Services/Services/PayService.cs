@@ -23,23 +23,34 @@ namespace SWD392.Manim.Services.Services
         private readonly IMapper _mapper;
         private readonly PayOSSettings _payOSSettings;
         private readonly PayOS _payOS;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PayService(IOptions<PayOSSettings> settings, IMapper mapper, IUnitOfWork unitOfWork)
+        public PayService(IOptions<PayOSSettings> settings, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             _payOSSettings = settings.Value;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _payOS = new PayOS(_payOSSettings.ClientId, _payOSSettings.ApiKey, _payOSSettings.ChecksumKey);
+            _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<CreatePaymentResult> CreatePaymentUrlRegisterCreator(decimal balance, Guid id)
+        public async Task<CreatePaymentResult> CreatePaymentUrlRegisterCreator(decimal balance)
         {
             try
             {
-                ApplicationUser? user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id == id).FirstOrDefaultAsync();
+                string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
+                Guid id;
+                ApplicationUser? user = null;
+                if (Guid.TryParse(userId, out id))
+                {
+                    user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
+                }
+                Wallet? wallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(w => w.UserId.Equals(id)).FirstOrDefaultAsync();
                 if (user == null)
                 {
                     throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tài khoản không tồn tại!");
                 }
+                
+
                 // Thông tin người mua
                 string buyerName = user.FullName;
                 string buyerPhone = user.PhoneNumber;
@@ -48,7 +59,15 @@ namespace SWD392.Manim.Services.Services
                 // Generate an order code and set the description
                 var orderCode = new Random().Next(1, 1000);
                 var description = "VQRIO123";
-
+                var deposit = new Deposit()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Amount = balance,
+                    UserId = user.Id.ToString(),
+                    Name = user.UserName,
+                    Description = description,
+                    AccountNo = user.Id.ToString()
+                };
                 // Create signature data
                 var signatureData = new Dictionary<string, object>
                 {
@@ -83,7 +102,8 @@ namespace SWD392.Manim.Services.Services
                     buyerAddress: "HCM", // Nếu có
                     expiredAt: (int)expiredAt.ToUnixTimeSeconds()
                 );
-
+                await _unitOfWork.GetRepository<Deposit>().InsertAsync(deposit);
+                await _unitOfWork.SaveAsync();
                 // Gọi API tạo thanh toán
                 var paymentResult = await _payOS.createPaymentLink(paymentData);
 
