@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Net.payOS.Types;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Controllers
@@ -10,11 +13,17 @@ namespace SWD392.Manim.API.Controllers
         private readonly IPayService _payService = payService;
 
         [HttpPost("/create")]
-        public async Task<IActionResult> CreatePaymentUrl([FromQuery] decimal balance, Guid id)
+        public async Task<IActionResult> CreatePaymentUrl([FromQuery] decimal balance)
         {
             try
             {
-                var result = await _payService.CreatePaymentUrlRegisterCreator(balance, id);
+                CreatePaymentResult result = null;
+                string userId = Authentication.GetUserIdFromHttpContext(HttpContext);
+                Guid id;
+                if (Guid.TryParse(userId, out id))
+                {
+                    result = await _payService.CreatePaymentUrlRegisterCreator(balance);
+                }
                 return Ok(result);
             }
             catch (Exception ex)
