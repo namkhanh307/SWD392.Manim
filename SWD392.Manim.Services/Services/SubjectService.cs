@@ -38,11 +38,11 @@ namespace SWD392.Manim.Services.Services
 
             var responseItems = resultQuery.Items.Select(item =>
             {
-                IEnumerable<GetChapterNamesVM> chapterName = item.Chapters
+                IEnumerable<GetChapterNamesVM> chapters = item.Chapters
                     .Select(ch => new GetChapterNamesVM { Id = ch.Id, Name = ch.Name })
                     .ToList();
                 var result = _mapper.Map<GetSubjectsVM>(item);
-                result.Chapters = chapterName;
+                result.Chapters = chapters;
                 return result;
             }).ToList();
 

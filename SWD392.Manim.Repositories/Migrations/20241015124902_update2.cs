@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SWD392.Manim.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class update1 : Migration
+    public partial class update2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

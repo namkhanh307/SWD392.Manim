@@ -12,8 +12,8 @@ using SWD392.Manim.Repositories.Entity;
 namespace SWD392.Manim.Repositories.Migrations
 {
     [DbContext(typeof(Swd392Context))]
-    [Migration("20241010060048_update1")]
-    partial class update1
+    [Migration("20241015124902_update2")]
+    partial class update2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -5,7 +5,7 @@ namespace SWD392.Manim.Repositories.ViewModel.ChapterVM
     public class GetChaptersVM
     {
         public string Id { get; set; } = string.Empty;
-        public string SubjectId { get; set; } = string.Empty;
+        public string SubjectId { get; set; } = string.Empty;//Ten bang + field
         public string SubjectName { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public bool Status { get; set; } = true;

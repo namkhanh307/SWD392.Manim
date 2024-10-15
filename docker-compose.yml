@@ -1,0 +1,6 @@
+services:
+  swd392.manim.api:
+    image: ${DOCKER_REGISTRY-}swd392manimapi
+    build:
+      context: .
+      dockerfile: SWD392.Manim.API/Dockerfile
