@@ -4,6 +4,7 @@ using SWD392.Manim.Repository.ViewModel.Wallet;
 using System.Text.Json.Serialization;
 using NLog.Web;
 using SWD392.Manim.API.Constants;
+using SWD392.Manim.Services.Services;
 
 var logger = NLog.LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"))
     .GetCurrentClassLogger();
@@ -33,6 +34,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddConfigSwagger();
     builder.Services.AddSwaggerGen();
+    builder.Services.AddHostedService<ReceiverService>();
     //Auto Mapper
     var app = builder.Build();
     // Configure the HTTP request pipeline

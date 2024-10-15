@@ -8,7 +8,7 @@ namespace SWD392.Manim.Services.Services
         Task DeleteParameter(string id);
         Task<GetParametersVM?> GetParameterById(string id);
         Task<PaginatedList<GetParametersVM>?> GetParameters(int index, int pageSize, string? id, string? nameSearch);
-        Task PostParameter(PostParameterVM model);
+        Task PostParameter(PostParameterVM model, string problemTypeId);
         Task PutParameter(string id, PostParameterVM model);
     }
 }

@@ -23,7 +23,12 @@ namespace SWD392.Manim.API.Middlewares
                 "/api/auth/SignUp",
                 "/api/wallet/create",
                 "/api/auth/google-auth/login",
-                "/api/auth/google-auth/signin-google"
+                "/api/auth/google-auth/signin-google",
+                "/api/parameter",
+                "/api/problems",
+                "/api/topics",
+                "/api/chapters",
+                "/api/subjects"
             ];
             _rolePermissions = new Dictionary<string, List<string>>()
             {
