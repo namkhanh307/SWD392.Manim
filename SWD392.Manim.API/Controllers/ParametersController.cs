@@ -30,9 +30,9 @@ namespace SWD392.Manim.API.Controllers
                 data: result));
         }
         [HttpPost]
-        public async Task<IActionResult> PostParameter(PostParameterVM model)
+        public async Task<IActionResult> PostParameter(PostParameterVM model, string problemTypeId)
         {
-            await _parameterService.PostParameter(model);
+            await _parameterService.PostParameter(model, problemTypeId);
             return Ok(new BaseResponseModel<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,

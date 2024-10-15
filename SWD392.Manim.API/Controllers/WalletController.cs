@@ -17,13 +17,8 @@ namespace SWD392.Manim.API.Controllers
         {
             try
             {
-                CreatePaymentResult result = null;
-                string userId = Authentication.GetUserIdFromHttpContext(HttpContext);
-                Guid id;
-                if (Guid.TryParse(userId, out id))
-                {
-                    result = await _payService.CreatePaymentUrlRegisterCreator(balance);
-                }
+                CreatePaymentResult result = await _payService.CreatePaymentUrlRegisterCreator(balance);
+
                 return Ok(result);
             }
             catch (Exception ex)
