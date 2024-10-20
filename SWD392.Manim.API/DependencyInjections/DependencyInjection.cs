@@ -113,7 +113,7 @@ namespace SWD392.Manim.API.Extensions
             services.AddRepository();
             services.AddAutoMapper();
             services.AddServices();
-            //services.SeedData();
+            services.SeedData();
             services.AddAutoMapper();
         }
         public static void AddRepository(this IServiceCollection services)
