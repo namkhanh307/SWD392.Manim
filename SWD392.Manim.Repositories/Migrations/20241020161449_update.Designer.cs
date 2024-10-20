@@ -12,8 +12,8 @@ using SWD392.Manim.Repositories.Entity;
 namespace SWD392.Manim.Repositories.Migrations
 {
     [DbContext(typeof(Swd392Context))]
-    [Migration("20241015124902_update2")]
-    partial class update2
+    [Migration("20241020161449_update")]
+    partial class update
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -368,6 +368,42 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.HasIndex("UserId1");
 
                     b.ToTable("Deposits");
+                });
+
+            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.OTP", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Createdby")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OTPs");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Parameter", b =>

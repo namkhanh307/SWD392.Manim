@@ -20,10 +20,15 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
     public virtual DbSet<Deposit> Deposits { get; set; }
     public virtual DbSet<Problem> Problems { get; set; }
     public virtual DbSet<Solution> Solutions { get; set; }
+    public virtual DbSet<SolutionOutput> SolutionOutputs { get; set; }
+    public virtual DbSet<SolutionType> SolutionTypes { get; set; }
+    public virtual DbSet<SolutionParameter> SolutionParameters { get; set; }
+    public virtual DbSet<Parameter> Parameters { get; set; }
     public virtual DbSet<Subject> Subjects { get; set; }
     public virtual DbSet<Topic> Topics { get; set; }
     public virtual DbSet<Transaction> Transactions { get; set; }
     public virtual DbSet<Wallet> Wallets { get; set; }
+    public virtual DbSet<OTP> OTPs { get; set; }
 
     private string? GetConnectionString()
     {

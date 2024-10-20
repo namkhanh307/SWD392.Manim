@@ -167,10 +167,10 @@ namespace SWD392.Manim.API.Extensions
 
         public static void SeedData(this IServiceCollection services)
         {
-            //using var scope = services.BuildServiceProvider().CreateScope();
-            //using var context = scope.ServiceProvider.GetRequiredService<Swd392Context>();
-            //var initialiser = new SeedData(context);
-            //initialiser.SeedingData();
+            using var scope = services.BuildServiceProvider().CreateScope();
+            using var context = scope.ServiceProvider.GetRequiredService<Swd392Context>();
+            var initialiser = new SeedData(context);
+            initialiser.SeedingData();
         }
         public class ServicesType
         {
