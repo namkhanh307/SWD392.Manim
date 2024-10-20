@@ -163,6 +163,7 @@ namespace SWD392.Manim.API.Extensions
             services.AddScoped<ISolutionOutputService, SolutionOutputService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITopicService, TopicService>();
+            services.AddScoped<IEmailSenderService, EmailSenderService>();
         }
 
         public static void SeedData(this IServiceCollection services)

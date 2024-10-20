@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using NLog.Web;
 using SWD392.Manim.API.Constants;
 using SWD392.Manim.Services.Services;
+using SWD392.Manim.Repositories.ViewModel.Email;
 
 var logger = NLog.LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"))
     .GetCurrentClassLogger();
@@ -30,6 +31,7 @@ try
     builder.Services.AddGoogleAuthentication();
     builder.Services.AddAuthentication();
     builder.Services.Configure<PayOSSettings>(builder.Configuration.GetSection("PayOS"));
+    builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddConfigSwagger();
