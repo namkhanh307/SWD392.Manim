@@ -77,7 +77,10 @@ namespace SWD392.Manim.Services.Services
             var account = await _unitOfWork.GetRepository<ApplicationUser>().Entities.FirstOrDefaultAsync(p => p.Email.Equals(email));
             if (account == null) throw new BadHttpRequestException("Account not found");
             var guidClaim = new Tuple<string, Guid>("userId", account.Id);
-            var token = _authService.GenerateTokens(account, "");
+            ApplicationUserRoles roleUser = _unitOfWork.GetRepository<ApplicationUserRoles>().Entities.Where(x => x.UserId == account.Id).FirstOrDefault();
+            string role = _unitOfWork.GetRepository<ApplicationRole>().Entities.Where(x => x.Id == roleUser.RoleId).Select(x => x.Name).FirstOrDefault()
+             ?? "unknow";
+            var token = _authService.GenerateTokens(account, role);
             // _logger.LogInformation($"Token: {token} ");
             return token;
         }
