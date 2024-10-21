@@ -41,6 +41,12 @@ namespace SWD392.Manim.API.Extensions
             return clientId;
         }
 
+        public static IServiceCollection AddHttpClientServices(this IServiceCollection services)
+        {
+            services.AddHttpClient(); // Registers HttpClient
+            return services;
+        }
+
         private static string CreateClientSecret(IConfiguration configuration)
         {
             var clientSecret = Environment.GetEnvironmentVariable("GOOGLE_OAUTH_CLIENT_SECRET")
