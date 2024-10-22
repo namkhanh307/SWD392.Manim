@@ -28,12 +28,12 @@ namespace SWD392.Manim.API.Middlewares
                 "/api/problems",
                 "/api/topics",
                 "/api/chapters",
-                "/api/subjects"
+                "/api/subjects",
             ];
             _rolePermissions = new Dictionary<string, List<string>>()
             {
                 //author bang role, roleClaim userClaim
-                { "User", new List<string> { "/api/subjects"} }
+                { "User", new List<string> { "/api/subjects", "/api/wallet/"} }
             };
 
         }

@@ -14,6 +14,8 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Infrastructure;
+using MimeKit;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -23,9 +25,9 @@ namespace SWD392.Manim.Services.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly IEmailSenderService _emailSender;
 
-
-        public AuthService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IMapper mapper)
+        public AuthService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IMapper mapper, IEmailSenderService emailSenderService)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
@@ -33,6 +35,7 @@ namespace SWD392.Manim.Services.Services
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
             _configuration = builder.Build();
             _mapper = mapper;
+            _emailSender = emailSenderService;
         }
 
         public async Task<GetSignInVM> SignIn(PostSignInVM model)
@@ -97,11 +100,44 @@ namespace SWD392.Manim.Services.Services
                 Balance = 0,
                 CreatedAt = DateTime.Now
             };
+
+            string otp = OtpUtil.GenerateOtp();
+            var otpRecord = new OTP
+            {
+                UserId = newUser.Id.ToString(),
+                Code = otp,
+                CreatedAt = DateTime.Now,
+                ExpiredAt = DateTime.Now.AddMinutes(10),
+                IsValid = true
+            };
+            await SendOtpEmail(newUser.Email, otp);
+            await _unitOfWork.GetRepository<OTP>().InsertAsync(otpRecord);
             await _unitOfWork.GetRepository<ApplicationUserRoles>().InsertAsync(userRoles);
             await _unitOfWork.GetRepository<ApplicationUser>().InsertAsync(newUser);
             await _unitOfWork.GetRepository<Wallet>().InsertAsync(wallet);
             await _unitOfWork.SaveAsync();
         }
+
+        private async Task SendOtpEmail(string email, string otp)
+        {
+            try
+            {
+                // Tạo subject cho email
+                var subject = "Welcome to PhysicManim";
+
+                // Tạo nội dung email, bao gồm OTP
+                var messageBody = $"Your OTP code is: {otp}. This code is valid for 10 minutes.";
+
+                // Gọi hàm SendEmailAsync từ _emailSender (đã được cấu hình trước đó)
+                await _emailSender.SendEmailAsync(email, subject, messageBody);
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi khi gửi email
+                Console.WriteLine($"Error sending OTP email: {ex.Message}");
+            }
+        }
+
         public GetTokenVM GenerateTokens(ApplicationUser user, string role)
         {
             DateTime now = DateTime.Now;

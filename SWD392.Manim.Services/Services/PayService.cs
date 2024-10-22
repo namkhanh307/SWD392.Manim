@@ -14,6 +14,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.ViewModel.Wallet;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Transaction = SWD392.Manim.Repositories.Entity.Transaction;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -24,14 +29,16 @@ namespace SWD392.Manim.Services.Services
         private readonly PayOSSettings _payOSSettings;
         private readonly PayOS _payOS;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly HttpClient _client;
 
-        public PayService(IOptions<PayOSSettings> settings, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public PayService(IOptions<PayOSSettings> settings, IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, HttpClient client)
         {
             _payOSSettings = settings.Value;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _payOS = new PayOS(_payOSSettings.ClientId, _payOSSettings.ApiKey, _payOSSettings.ChecksumKey);
             _httpContextAccessor = httpContextAccessor;
+            _client = client;
         }
         public async Task<CreatePaymentResult> CreatePaymentUrlRegisterCreator(decimal balance)
         {
@@ -49,7 +56,7 @@ namespace SWD392.Manim.Services.Services
                 {
                     throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tài khoản không tồn tại!");
                 }
-                
+
 
                 // Thông tin người mua
                 string buyerName = user.FullName;
@@ -116,7 +123,140 @@ namespace SWD392.Manim.Services.Services
             }
         }
 
-        private string? ComputeHmacSha256(string data, string checksumKey)
+        //public async Task<ExtendedPaymentInfo> GetPaymentInfo(string paymentLinkId)
+        //{
+        //    try
+        //    {
+        //        var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{paymentLinkId}";
+
+        //        var request = new HttpRequestMessage(HttpMethod.Get, getUrl);
+        //        request.Headers.Add("x-client-id", _payOSSettings.ClientId);
+        //        request.Headers.Add("x-api-key", _payOSSettings.ApiKey);
+
+        //        // Send the request
+        //        var response = await _client.SendAsync(request);
+
+        //        // Ensure the request is successful
+        //        response.EnsureSuccessStatusCode();
+
+        //        var responseContent = await response.Content.ReadAsStringAsync();
+
+        //        var responseObject = JsonConvert.DeserializeObject<JObject>(responseContent);
+        //        var paymentInfo = responseObject["data"].ToObject<ObjectPayment>();
+
+
+        //        string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
+        //        Guid id;
+        //        ApplicationUser? user = null;
+        //        if (Guid.TryParse(userId, out id))
+        //        {
+        //            user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
+
+        //        }
+        //        var wallet = await _unitOfWork.GetRepository<Wallet>()
+        //                          .Entities
+        //                          .Where(w => w.UserId == id)
+        //                          .FirstOrDefaultAsync();
+
+        //        int totalPrice = paymentInfo.Amount;
+
+        //        string buyerName = user.FullName;
+        //        string buyerPhone = user.PhoneNumber;
+        //        string buyerEmail = user.Email;
+
+        //        var extendedPaymentInfo = new ExtendedPaymentInfo
+        //        {
+        //            Amount = totalPrice,
+        //            Description = "VQRIO123",
+        //            BuyerName = buyerName,
+        //            BuyerPhone = buyerPhone,
+        //            BuyerEmail = buyerEmail,
+        //            Status = paymentInfo.Status,
+
+        //        };
+
+        //        // Update product status if payment is completed
+        //        if (paymentInfo.Status == "PAID")
+        //        {
+        //            wallet.Balance += totalPrice;
+        //        }
+
+        //        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+        //        await _unitOfWork.SaveAsync();
+
+        //        return extendedPaymentInfo;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new BadHttpRequestException("An error occurred while getting payment info.", ex);
+        //    }
+        //}
+
+        public async Task<ObjectPayment> GetPaymentInfo(string paymentLinkId)
+        {
+            try
+            {
+                var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{paymentLinkId}";
+
+                var request = new HttpRequestMessage(HttpMethod.Get, getUrl);
+                request.Headers.Add("x-client-id", _payOSSettings.ClientId);
+                request.Headers.Add("x-api-key", _payOSSettings.ApiKey);
+
+                // Gửi yêu cầu HTTP
+                var response = await _client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var responseObject = JsonConvert.DeserializeObject<JObject>(responseContent);
+                var paymentInfo = responseObject["data"].ToObject<ObjectPayment>();
+
+                return paymentInfo;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while getting payment info.", ex);
+            }
+        }
+        public async Task<bool> HandlePaymentCallback(string paymentLinkId)
+        {
+            try
+            {
+                // Lấy thông tin thanh toán
+                var paymentInfo = await GetPaymentInfo(paymentLinkId);
+
+                // Nếu thanh toán thành công, cập nhật số dư ví
+                if (paymentInfo.Status == "PAID")
+                {
+                    string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
+                    Guid id;
+                    ApplicationUser? user = null;
+                    if (Guid.TryParse(userId, out id))
+                    {
+                        user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
+
+                    }
+                    var wallet = await _unitOfWork.GetRepository<Wallet>()
+                                  .Entities
+                                  .Where(w => w.UserId == id)
+                                  .FirstOrDefaultAsync();
+
+                    if (wallet != null)
+                    {
+                        wallet.Balance += paymentInfo.Amount;
+                        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+                        await _unitOfWork.SaveAsync();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while handling payment callback.", ex);
+            }
+        } 
+
+            private string? ComputeHmacSha256(string data, string checksumKey)
         {
             using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(checksumKey)))
             {
