@@ -22,7 +22,7 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
     public virtual DbSet<Solution> Solutions { get; set; }
     public virtual DbSet<SolutionOutput> SolutionOutputs { get; set; }
     public virtual DbSet<SolutionType> SolutionTypes { get; set; }
-    public virtual DbSet<SolutionParameter> SolutionParameters { get; set; }
+    public virtual DbSet<ProblemParameter> SolutionParameters { get; set; }
     public virtual DbSet<Parameter> Parameters { get; set; }
     public virtual DbSet<Subject> Subjects { get; set; }
     public virtual DbSet<Topic> Topics { get; set; }
@@ -34,7 +34,7 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
     {
         //IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../SWD392.Manim.API")).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
         //return configuration["ConnectionStrings:DefautDB"];
-        return "Server=tcp:namkhanh.database.windows.net,1433;Initial Catalog=swd-manim;Persist Security Info=False;User ID=namkhanh;Password=Itjustapassword1@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        return "server=(local);database=SWD;uid=sa;pwd=12345678;Trusted_Connection=True;Trust Server Certificate=True;Timeout=30;";
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(GetConnectionString());
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -48,19 +48,19 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
                 entityType.SetTableName(tableName.Substring(6));
             }
         }
-        modelBuilder.Entity<SolutionParameter>()
-            .HasKey(sp => new { sp.ParameterId, sp.SolutionId });
+        modelBuilder.Entity<ProblemParameter>()
+            .HasKey(sp => new { sp.ParameterId, sp.ProblemId });
 
-        modelBuilder.Entity<SolutionParameter>()
-            .HasOne(sp => sp.Solution)
-            .WithMany(s => s.SolutionParameters)
-            .HasForeignKey(sp => sp.SolutionId)
+        modelBuilder.Entity<ProblemParameter>()
+            .HasOne(sp => sp.Parameter)
+            .WithMany(s => s.ProblemParameters)
+            .HasForeignKey(sp => sp.ParameterId)
             .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
 
-        modelBuilder.Entity<SolutionParameter>()
-            .HasOne(sp => sp.Parameter)
-            .WithMany(p => p.SolutionParameters)
-            .HasForeignKey(sp => sp.ParameterId)
+        modelBuilder.Entity<ProblemParameter>()
+            .HasOne(sp => sp.Problem)
+            .WithMany(p => p.ProblemParameters)
+            .HasForeignKey(sp => sp.ProblemId)
             .OnDelete(DeleteBehavior.Cascade); // Allows cascade delete for Parameter
 
         modelBuilder.Entity<ApplicationUser>()
@@ -77,7 +77,7 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
         modelBuilder.Entity<SolutionOutput>().ToTable("SolutionOutputs");
         modelBuilder.Entity<Parameter>().ToTable("Parameters");
         modelBuilder.Entity<SolutionType>().ToTable("SolutionTypes");
-        modelBuilder.Entity<SolutionParameter>().ToTable("SolutionParameters");
+        modelBuilder.Entity<ProblemParameter>().ToTable("SolutionParameters");
 
         modelBuilder.Entity<SolutionType>()
             .HasOne(s => s.Solution)
@@ -90,6 +90,12 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
             .WithOne(so => so.Solution)
             .HasForeignKey<SolutionOutput>(so => so.SolutionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Deposit>()
+            .HasOne(sp => sp.User)
+            .WithMany(p => p.Deposits)
+            .HasForeignKey(sp => sp.UserId)
+            .OnDelete(DeleteBehavior.Cascade); // Allows cascade delete for Parameter
     }
 
     //partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

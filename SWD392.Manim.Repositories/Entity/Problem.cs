@@ -8,6 +8,6 @@ public partial class Problem : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public virtual ICollection<SolutionType> SolutionTypes { get; set; } = new List<SolutionType>();
-    public virtual ICollection<Parameter> Parameters { get; set; } = new List<Parameter>();
+    public virtual ICollection<ProblemParameter> ProblemParameters { get; set; } = new List<ProblemParameter>();
     public virtual Topic? Topic { get; set; }
 }

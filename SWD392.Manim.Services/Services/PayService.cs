@@ -63,7 +63,7 @@ namespace SWD392.Manim.Services.Services
                 {
                     Id = Guid.NewGuid().ToString(),
                     Amount = balance,
-                    UserId = user.Id.ToString(),
+                    UserId = user.Id,
                     Name = user.UserName,
                     Description = description,
                     AccountNo = user.Id.ToString()

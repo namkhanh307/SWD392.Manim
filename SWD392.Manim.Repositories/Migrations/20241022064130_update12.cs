@@ -6,11 +6,30 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SWD392.Manim.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class update12 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "OTPs",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpiredAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsValid = table.Column<bool>(type: "bit", nullable: false),
+                    Createdby = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OTPs", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
@@ -131,13 +150,12 @@ namespace SWD392.Manim.Repositories.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AccountNo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Createdby = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -147,10 +165,11 @@ namespace SWD392.Manim.Repositories.Migrations
                 {
                     table.PrimaryKey("PK_Deposits", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Deposits_Users_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_Deposits_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -367,6 +386,35 @@ namespace SWD392.Manim.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SolutionParameters",
+                columns: table => new
+                {
+                    ParameterId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProblemId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<double>(type: "float", nullable: false),
+                    Createdby = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SolutionParameters", x => new { x.ParameterId, x.ProblemId });
+                    table.ForeignKey(
+                        name: "FK_SolutionParameters_Parameters_ParameterId",
+                        column: x => x.ParameterId,
+                        principalTable: "Parameters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_SolutionParameters_Problems_ProblemId",
+                        column: x => x.ProblemId,
+                        principalTable: "Problems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Solutions",
                 columns: table => new
                 {
@@ -422,35 +470,6 @@ namespace SWD392.Manim.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SolutionParameters",
-                columns: table => new
-                {
-                    ParameterId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    SolutionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<double>(type: "float", nullable: false),
-                    Createdby = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SolutionParameters", x => new { x.ParameterId, x.SolutionId });
-                    table.ForeignKey(
-                        name: "FK_SolutionParameters_Parameters_ParameterId",
-                        column: x => x.ParameterId,
-                        principalTable: "Parameters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SolutionParameters_Solutions_SolutionId",
-                        column: x => x.SolutionId,
-                        principalTable: "Solutions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Transactions",
                 columns: table => new
                 {
@@ -492,9 +511,9 @@ namespace SWD392.Manim.Repositories.Migrations
                 column: "SubjectId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Deposits_UserId1",
+                name: "IX_Deposits_UserId",
                 table: "Deposits",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Parameters_ProblemId",
@@ -525,9 +544,9 @@ namespace SWD392.Manim.Repositories.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_SolutionParameters_SolutionId",
+                name: "IX_SolutionParameters_ProblemId",
                 table: "SolutionParameters",
-                column: "SolutionId");
+                column: "ProblemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Solutions_SolutionTypeId",
@@ -603,6 +622,9 @@ namespace SWD392.Manim.Repositories.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "OTPs");
+
             migrationBuilder.DropTable(
                 name: "RoleClaims");
 

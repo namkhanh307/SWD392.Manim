@@ -4,7 +4,7 @@ namespace SWD392.Manim.Repositories.Entity;
 
 public partial class Deposit : BaseEntity
 {
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
     public decimal Amount { get; set; }
