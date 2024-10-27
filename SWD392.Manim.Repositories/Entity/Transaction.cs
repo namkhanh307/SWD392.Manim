@@ -9,6 +9,7 @@ public partial class Transaction : BaseEntity
     public string? DepositId { get; set; }
     public string? Username { get; set; }
     public decimal? Amount { get; set; }
+    public long OrderCode { get; set; }
     public DateTime? BillingDate { get; set; }
     public virtual Deposit? Deposit { get; set; }
     public virtual Solution? Solution { get; set; }
