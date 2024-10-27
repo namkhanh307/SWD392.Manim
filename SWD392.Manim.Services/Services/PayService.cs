@@ -19,6 +19,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Transaction = SWD392.Manim.Repositories.Entity.Transaction;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using static Org.BouncyCastle.Asn1.Cmp.Challenge;
 
 namespace SWD392.Manim.Services.Services
@@ -63,6 +64,7 @@ namespace SWD392.Manim.Services.Services
                 string buyerName = user.FullName;
                 string buyerPhone = user.PhoneNumber;
                 string buyerEmail = user.Email;
+
                 // Generate an order code and set the description
                 Random random = new Random();
                 long orderCode = ((DateTime.Now.Ticks % 100000) % int.MaxValue) + random.Next(1,100); // Đảm bảo orderCode là duy nhất
