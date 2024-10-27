@@ -8,6 +8,4 @@ namespace SWD392.Manim.Services.Services
         Task<CreatePaymentResult> CreatePaymentUrlRegisterCreator(decimal balance);
         Task<ObjectPayment> GetPaymentInfo(string paymentLinkId);
         Task<bool> HandlePaymentCallback(string paymentLinkId, long orderCode);
-
-    }
 }

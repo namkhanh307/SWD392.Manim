@@ -63,10 +63,9 @@ namespace SWD392.Manim.Services.Services
                 string buyerName = user.FullName;
                 string buyerPhone = user.PhoneNumber;
                 string buyerEmail = user.Email;
-
                 // Generate an order code and set the description
                 Random random = new Random();
-                long orderCode = ((DateTime.Now.Ticks % 100000) % int.MaxValue) + random.Next(1, 100);
+                long orderCode = ((DateTime.Now.Ticks % 100000) % int.MaxValue) + random.Next(1,100); // Đảm bảo orderCode là duy nhất
                 var description = "VQRIO123";
                 var deposit = new Deposit()
                 {
@@ -79,15 +78,15 @@ namespace SWD392.Manim.Services.Services
                 };
                 // Create signature data
                 var signatureData = new Dictionary<string, object>
-                {
-                    { "amount", balance },
-                    { "cancelUrl", _payOSSettings.ReturnUrlFail },
-                    { "description", description },
-                    { "expiredAt", DateTimeOffset.Now.AddMinutes(10).ToUnixTimeSeconds() },
-                    { "orderCode", orderCode },
-                    { "returnUrl", _payOSSettings.ReturnUrl }
-                };
-
+            {
+                { "amount", balance },
+                { "cancelUrl", _payOSSettings.ReturnUrlFail },
+                { "description", description },
+                { "expiredAt", DateTimeOffset.Now.AddMinutes(10).ToUnixTimeSeconds() },
+                { "orderCode", orderCode },
+                { "returnUrl", _payOSSettings.ReturnUrl }
+            };
+                
                 // Sort and compute the signature
                 var sortedSignatureData = new SortedDictionary<string, object>(signatureData);
                 var dataForSignature = string.Join("&", sortedSignatureData.Select(p => $"{p.Key}={p.Value}"));
@@ -111,6 +110,7 @@ namespace SWD392.Manim.Services.Services
                     buyerAddress: "HCM", // Nếu có
                     expiredAt: (int)expiredAt.ToUnixTimeSeconds()
                 );
+
                 Transaction transaction = new Transaction
                 {
                     Amount = balance,
@@ -188,9 +188,70 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new Exception("An error occurred while getting payment info.", ex);
             }
-        } 
+         
+        }
 
-            private string? ComputeHmacSha256(string data, string checksumKey)
+        public async Task<bool> ProcessPaymentAsync(decimal amount)
+        {
+            string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
+            Guid id;
+            if (Guid.TryParse(userId, out id))
+            {
+                // Tìm ví của người dùng dựa trên UserId
+                var wallet = await _unitOfWork.GetRepository<Wallet>().Entities
+                                  .Where(w => w.UserId.Equals(id))
+                                  .FirstOrDefaultAsync();
+
+                if (wallet != null)
+                {
+                    // Cộng tiền vào ví
+                    wallet.Balance += amount;
+                    await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+                    await _unitOfWork.SaveAsync();
+                    return true; // Thành công
+                }
+                else
+                {
+                    throw new Exception("Không tìm thấy ví của người dùng.");
+                }
+            }
+            else
+            {
+                throw new Exception("UserId không hợp lệ.");
+            }
+        }
+
+
+        public async Task<bool> HandlePaymentCallback(string paymentLinkId, long orderCode)
+        {
+            try
+            {
+                // Lấy thông tin thanh toán
+                var paymentInfo = await GetPaymentInfo(paymentLinkId);
+
+                // Nếu thanh toán thành công, cập nhật số dư ví
+                if (paymentInfo.Status == "PAID")
+                {
+                    var transaction = _unitOfWork.GetRepository<Transaction>().Entities.Where(t => t.OrderCode == orderCode).FirstOrDefault();
+                    var wallet = _unitOfWork.GetRepository<Wallet>().Entities.Where(w => w.Id == transaction.WalletId).FirstOrDefault();
+                    
+                    if (wallet != null)
+                    {
+                        wallet.Balance += paymentInfo.Amount;
+                        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+                        await _unitOfWork.SaveAsync();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while handling payment callback.", ex);
+            }
+        }
+
+        private string? ComputeHmacSha256(string data, string checksumKey)
         {
             using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(checksumKey)))
             {
