@@ -65,8 +65,8 @@ namespace SWD392.Manim.Services.Services
                 string buyerPhone = user.PhoneNumber;
                 string buyerEmail = user.Email;
 
-                Random random = new Random();
                 // Generate an order code and set the description
+                Random random = new Random();
                 long orderCode = ((DateTime.Now.Ticks % 100000) % int.MaxValue) + random.Next(1,100); // Đảm bảo orderCode là duy nhất
                 var description = "VQRIO123";
                 var deposit = new Deposit()
@@ -137,74 +137,34 @@ namespace SWD392.Manim.Services.Services
             }
         }
 
-        //public async Task<ExtendedPaymentInfo> GetPaymentInfo(string paymentLinkId)
-        //{
-        //    try
-        //    {
-        //        var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{paymentLinkId}";
+        public async Task<bool> HandlePaymentCallback(string paymentLinkId, long orderCode)
+        {
+            try
+            {
+                // Lấy thông tin thanh toán
+                var paymentInfo = await GetPaymentInfo(paymentLinkId);
 
-        //        var request = new HttpRequestMessage(HttpMethod.Get, getUrl);
-        //        request.Headers.Add("x-client-id", _payOSSettings.ClientId);
-        //        request.Headers.Add("x-api-key", _payOSSettings.ApiKey);
+                // Nếu thanh toán thành công, cập nhật số dư ví
+                if (paymentInfo.Status == "PAID")
+                {
+                    var transaction = _unitOfWork.GetRepository<Transaction>().Entities.Where(t => t.OrderCode == orderCode).FirstOrDefault();
+                    var wallet = _unitOfWork.GetRepository<Wallet>().Entities.Where(w => w.Id == transaction.WalletId).FirstOrDefault();
 
-        //        // Send the request
-        //        var response = await _client.SendAsync(request);
-
-        //        // Ensure the request is successful
-        //        response.EnsureSuccessStatusCode();
-
-        //        var responseContent = await response.Content.ReadAsStringAsync();
-
-        //        var responseObject = JsonConvert.DeserializeObject<JObject>(responseContent);
-        //        var paymentInfo = responseObject["data"].ToObject<ObjectPayment>();
-
-
-        //        string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
-        //        Guid id;
-        //        ApplicationUser? user = null;
-        //        if (Guid.TryParse(userId, out id))
-        //        {
-        //            user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
-
-        //        }
-        //        var wallet = await _unitOfWork.GetRepository<Wallet>()
-        //                          .Entities
-        //                          .Where(w => w.UserId == id)
-        //                          .FirstOrDefaultAsync();
-
-        //        int totalPrice = paymentInfo.Amount;
-
-        //        string buyerName = user.FullName;
-        //        string buyerPhone = user.PhoneNumber;
-        //        string buyerEmail = user.Email;
-
-        //        var extendedPaymentInfo = new ExtendedPaymentInfo
-        //        {
-        //            Amount = totalPrice,
-        //            Description = "VQRIO123",
-        //            BuyerName = buyerName,
-        //            BuyerPhone = buyerPhone,
-        //            BuyerEmail = buyerEmail,
-        //            Status = paymentInfo.Status,
-
-        //        };
-
-        //        // Update product status if payment is completed
-        //        if (paymentInfo.Status == "PAID")
-        //        {
-        //            wallet.Balance += totalPrice;
-        //        }
-
-        //        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
-        //        await _unitOfWork.SaveAsync();
-
-        //        return extendedPaymentInfo;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new BadHttpRequestException("An error occurred while getting payment info.", ex);
-        //    }
-        //}
+                    if (wallet != null)
+                    {
+                        wallet.Balance += paymentInfo.Amount;
+                        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+                        await _unitOfWork.SaveAsync();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while handling payment callback.", ex);
+            }
+        }
 
         public async Task<ObjectPayment> GetPaymentInfo(string paymentLinkId)
         {
@@ -230,6 +190,7 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new Exception("An error occurred while getting payment info.", ex);
             }
+         
         }
 
         public async Task<bool> ProcessPaymentAsync(decimal amount)

@@ -353,12 +353,16 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UserId1")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Deposits");
                 });
@@ -470,36 +474,6 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.ToTable("Problems");
                 });
 
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.ProblemParameter", b =>
-                {
-                    b.Property<string>("ParameterId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ProblemId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Createdby")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("Value")
-                        .HasColumnType("float");
-
-                    b.HasKey("ParameterId", "ProblemId");
-
-                    b.HasIndex("ProblemId");
-
-                    b.ToTable("SolutionParameters", (string)null);
-                });
-
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
                 {
                     b.Property<string>("Id")
@@ -576,6 +550,36 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsUnique();
 
                     b.ToTable("SolutionOutputs", (string)null);
+                });
+
+            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionParameter", b =>
+                {
+                    b.Property<string>("ParameterId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SolutionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Createdby")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("float");
+
+                    b.HasKey("ParameterId", "SolutionId");
+
+                    b.HasIndex("SolutionId");
+
+                    b.ToTable("SolutionParameters", (string)null);
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionType", b =>
@@ -834,9 +838,7 @@ namespace SWD392.Manim.Repositories.Migrations
                 {
                     b.HasOne("SWD392.Manim.Repositories.Entity.ApplicationUser", "User")
                         .WithMany("Deposits")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("User");
                 });
@@ -844,7 +846,7 @@ namespace SWD392.Manim.Repositories.Migrations
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Parameter", b =>
                 {
                     b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
-                        .WithMany()
+                        .WithMany("Parameters")
                         .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -861,25 +863,6 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("Topic");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.ProblemParameter", b =>
-                {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Parameter", "Parameter")
-                        .WithMany("ProblemParameters")
-                        .HasForeignKey("ParameterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
-                        .WithMany("ProblemParameters")
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Parameter");
-
-                    b.Navigation("Problem");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
@@ -908,6 +891,25 @@ namespace SWD392.Manim.Repositories.Migrations
                         .HasForeignKey("SWD392.Manim.Repositories.Entity.SolutionOutput", "SolutionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Solution");
+                });
+
+            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionParameter", b =>
+                {
+                    b.HasOne("SWD392.Manim.Repositories.Entity.Parameter", "Parameter")
+                        .WithMany("SolutionParameters")
+                        .HasForeignKey("ParameterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SWD392.Manim.Repositories.Entity.Solution", "Solution")
+                        .WithMany("SolutionParameters")
+                        .HasForeignKey("SolutionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Parameter");
 
                     b.Navigation("Solution");
                 });
@@ -985,12 +987,12 @@ namespace SWD392.Manim.Repositories.Migrations
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Parameter", b =>
                 {
-                    b.Navigation("ProblemParameters");
+                    b.Navigation("SolutionParameters");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Problem", b =>
                 {
-                    b.Navigation("ProblemParameters");
+                    b.Navigation("Parameters");
 
                     b.Navigation("SolutionTypes");
                 });
@@ -998,6 +1000,8 @@ namespace SWD392.Manim.Repositories.Migrations
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
                 {
                     b.Navigation("SolutionOutput");
+
+                    b.Navigation("SolutionParameters");
 
                     b.Navigation("Transactions");
                 });
