@@ -29,6 +29,7 @@ namespace SWD392.Manim.API.Middlewares
                 "/api/topics",
                 "/api/chapters",
                 "/api/subjects",
+                "/api/wallet/ReturnUrl"
             ];
             _rolePermissions = new Dictionary<string, List<string>>()
             {
