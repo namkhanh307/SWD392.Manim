@@ -34,7 +34,7 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
     {
         //IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../SWD392.Manim.API")).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
         //return configuration["ConnectionStrings:DefautDB"];
-        return "server=(local);database=SWD;uid=sa;pwd=12345678;Trusted_Connection=True;Trust Server Certificate=True;Timeout=30;";
+        return "Server=tcp:namkhanh.database.windows.net,1433;Initial Catalog=swd-manim;Persist Security Info=False;User ID=namkhanh;Password=Itjustapassword1@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(GetConnectionString());
     protected override void OnModelCreating(ModelBuilder modelBuilder)
