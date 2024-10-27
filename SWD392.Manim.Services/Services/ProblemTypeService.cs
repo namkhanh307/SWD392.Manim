@@ -13,7 +13,7 @@ namespace SWD392.Manim.Services.Services
     public class ProblemService : IProblemService
     {
         private readonly IMapper _mapper;
-        private IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         public ProblemService(IMapper mapper, IUnitOfWork unitOfWork)
         {
             _mapper = mapper;
