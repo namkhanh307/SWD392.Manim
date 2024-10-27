@@ -711,6 +711,9 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<string>("DepositId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("SolutionId")
                         .HasColumnType("nvarchar(450)");
 

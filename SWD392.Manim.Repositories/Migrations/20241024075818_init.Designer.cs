@@ -12,8 +12,8 @@ using SWD392.Manim.Repositories.Entity;
 namespace SWD392.Manim.Repositories.Migrations
 {
     [DbContext(typeof(Swd392Context))]
-    [Migration("20241020161449_update")]
-    partial class update
+    [Migration("20241024075818_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -713,6 +713,9 @@ namespace SWD392.Manim.Repositories.Migrations
 
                     b.Property<string>("DepositId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("SolutionId")
                         .HasColumnType("nvarchar(450)");
