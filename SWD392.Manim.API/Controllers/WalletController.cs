@@ -21,7 +21,7 @@ namespace SWD392.Manim.API.Controllers
                 code: ResponseCodeConstants.SUCCESS,
                 data: result));
         }
-        [HttpPost("/create")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreatePaymentUrl([FromQuery] decimal balance)
         {
             try

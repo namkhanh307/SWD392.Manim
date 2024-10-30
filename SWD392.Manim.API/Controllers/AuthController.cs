@@ -38,29 +38,66 @@ namespace SWD392.Manim.API.Controllers
         [HttpGet("google-auth/login")]
         public IActionResult Login()
         {
-            var props = new AuthenticationProperties { RedirectUri = $"api/auth/google-auth/signin-google" };
+            var props = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("SignInGoogle", "Auth")  // Generates the absolute path for redirect
+            };
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }
 
         [HttpGet("google-auth/signin-google")]
         public async Task<IActionResult> SignInGoogle()
         {
-            GoogleAuthVM googleAuthResponse = await _googleAuthenticationService.AuthenticateGoogleUser(HttpContext);
-            var checkAccount = await _userService.GetAccountByEmail(googleAuthResponse.Email);
-            if (!checkAccount)
+            try
             {
-                var response = await _userService.CreateNewUserAccountByGoogle(googleAuthResponse);
-                if (response == null)
+                GoogleAuthVM googleAuthResponse = await _googleAuthenticationService.AuthenticateGoogleUser(HttpContext);
+
+                var checkAccount = await _userService.GetAccountByEmail(googleAuthResponse.Email);
+                if (!checkAccount)
                 {
-                    return Problem("Tài khoản không tồn tại");
+                    var response = await _userService.CreateNewUserAccountByGoogle(googleAuthResponse);
+                    if (response == null)
+                    {
+                        return Problem("Account creation failed.");
+                    }
                 }
+
+                var token = await _userService.CreateTokenByEmail(googleAuthResponse.Email);
+                googleAuthResponse.Token = token;
+
+                // Sanitize inputs if necessary and inject into HTML
+                var email = System.Web.HttpUtility.JavaScriptStringEncode(googleAuthResponse.Email);
+                var name = System.Web.HttpUtility.JavaScriptStringEncode(googleAuthResponse.Name);
+                var accessToken = System.Web.HttpUtility.JavaScriptStringEncode(token.AccessToken);
+                var refreshToken = System.Web.HttpUtility.JavaScriptStringEncode(token.RefreshToken);
+
+                // HTML response with postMessage to return token and close the window
+                var htmlContent = $@"
+<html>
+<body>
+    <script type='text/javascript'>
+        window.opener.postMessage({{
+            data: {{
+                token: {{
+                    accessToken: '{accessToken}',
+                    refreshToken: '{refreshToken}'
+                }},
+                email: '{email}',
+                name: '{name}'
+            }}
+        }}, '{Request.Scheme}://{Request.Host}');
+
+    </script>
+</body>
+</html>";
+
+                return Content(htmlContent, "text/html");
             }
-            var token = await _userService.CreateTokenByEmail(googleAuthResponse.Email);
-            googleAuthResponse.Token = token;
-            return Ok(new BaseResponseModel<GoogleAuthVM>(
-                statusCode: StatusCodes.Status200OK,
-                code: ResponseCodeConstants.SUCCESS,
-                data: googleAuthResponse));
+            catch (Exception ex)
+            {
+                // Log the exception and provide user feedback
+                return Problem("An error occurred during Google sign-in.");
+            }
         }
     }
 }
