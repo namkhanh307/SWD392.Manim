@@ -21,7 +21,7 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
     public virtual DbSet<Solution> Solutions { get; set; }
     public virtual DbSet<SolutionOutput> SolutionOutputs { get; set; }
     public virtual DbSet<SolutionType> SolutionTypes { get; set; }
-    public virtual DbSet<ProblemParameter> SolutionParameters { get; set; }
+    public virtual DbSet<ProblemParameter> ProblemParameters { get; set; }
     public virtual DbSet<Parameter> Parameters { get; set; }
     public virtual DbSet<Subject> Subjects { get; set; }
     public virtual DbSet<Topic> Topics { get; set; }

@@ -12,9 +12,9 @@ namespace SWD392.Manim.API.Controllers
         public readonly IParameterService _parameterService = parameterService;
 
         [HttpGet]
-        public async Task<IActionResult> GetParameters(int index = 1, int pageSize = 10, string? id = null, string? nameSearch = null)
+        public async Task<IActionResult> GetParameters(int index = 1, int pageSize = 10, string? id = null, string? nameSearch = null, string? topicId = null)
         {
-            var result = await _parameterService.GetParameters(index, pageSize, id, nameSearch);
+            var result = await _parameterService.GetParameters(index, pageSize, id, nameSearch, topicId);
             return Ok(new BaseResponseModel<PaginatedList<GetParametersVM>?>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,

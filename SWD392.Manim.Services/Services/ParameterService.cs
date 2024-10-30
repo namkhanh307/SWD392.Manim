@@ -32,7 +32,7 @@ namespace SWD392.Manim.Services.Services
         }
         private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
 
-        public async Task<PaginatedList<GetParametersVM>?> GetParameters(int index, int pageSize, string? id, string? nameSearch)
+        public async Task<PaginatedList<GetParametersVM>?> GetParameters(int index, int pageSize, string? id, string? nameSearch, string? topicId)
         {
             IQueryable<Parameter> query = _unitOfWork.GetRepository<Parameter>().Entities.Where(s => !s.DeletedAt.HasValue);
 
@@ -44,6 +44,10 @@ namespace SWD392.Manim.Services.Services
             if (!string.IsNullOrWhiteSpace(nameSearch))
             {
                 query = query.Where(lp => lp.Name.Contains(nameSearch));
+            }
+            if (!string.IsNullOrWhiteSpace(topicId))
+            {
+                query = query.Where(lp => lp.TopicId == topicId);
             }
 
             var resultQuery = await _unitOfWork.GetRepository<Parameter>().GetPagging(query, index, pageSize);
@@ -67,22 +71,16 @@ namespace SWD392.Manim.Services.Services
         public async Task PostParameter(PostParameterVM model)
         {
             Guid id;
-            ApplicationUser? user = null;
             if (Guid.TryParse(UserId, out id))
             {
-                user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
+                ApplicationUser? user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tài khoản không tồn tại!");
             }
-
-            if (user == null)
-            {
-                throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tài khoản không tồn tại!");
-            }
-            Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name).FirstOrDefaultAsync();
+            Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name && p.TopicId == model.TopicId).FirstOrDefaultAsync();
             if (existedParameter != null)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên biến đã tồn tại");
             }
-
+            Topic? topic = await _unitOfWork.GetRepository<Topic>().Entities.Where(p => !p.DeletedAt.HasValue && p.Id == model.TopicId).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại");
             Parameter parameter = _mapper.Map<Parameter>(model);
             //.ProblemId = problemTypeId;
             var subscriber = Connection.GetSubscriber();
@@ -98,11 +96,12 @@ namespace SWD392.Manim.Services.Services
         public async Task PutParameter(string id, PostParameterVM model)
         {
             Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Biến không tồn tại!");
-            Parameter? existedParameterName = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name).FirstOrDefaultAsync();
+            Parameter? existedParameterName = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name && p.TopicId == model.TopicId).FirstOrDefaultAsync();
             if (existedParameterName != null)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên biến đã tồn tại");
             }
+            Topic? topic = await _unitOfWork.GetRepository<Topic>().Entities.Where(p => !p.DeletedAt.HasValue && p.Id == model.TopicId).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại"); ;
             _mapper.Map(model, existedParameter);
             existedParameter.UpdatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Parameter>().UpdateAsync(existedParameter);

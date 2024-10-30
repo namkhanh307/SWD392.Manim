@@ -60,6 +60,8 @@ namespace SWD392.Manim.Repositories
                 Subject[] subjects = CreateSubject();
                 _context.AddRange(subjects);
             }
+            _context.SaveChanges();
+
             data = _context.Wallets.Count();
             if (data is 0)
             {
@@ -68,6 +70,23 @@ namespace SWD392.Manim.Repositories
             }
             _context.SaveChanges();
 
+            data = _context.Parameters.Count();
+            if (data is 0)
+            {
+                Parameter[] spring = CreateSpringParameter("c87d6b7f2a014f6b9193a3d28c819cd9");
+                Parameter[] pendulum = CreatePendulumParameter("f8e4db932f474de39b3fcbb10f9f5b62");
+                _context.AddRange(spring);
+                _context.AddRange(pendulum);
+            }
+            _context.SaveChanges();
+            data = _context.Problems.Count();
+            if (data is 0)
+            {
+                Problem[] problems = CreateProblem();
+                _context.AddRange(problems);
+            }
+            _context.SaveChanges(); 
+ 
             AssignAdminRoleToUser("khanhnvn", "AdminSystem");
             AssignAdminRoleToUser("vudq", "User");
             AssignAdminRoleToUser("cuongtd", "User");
@@ -81,6 +100,19 @@ namespace SWD392.Manim.Repositories
             AssignUserToWallet("nghiatm", "1b9a3c6f2f4d48f089ea3b728f416e92");
             AssignUserToWallet("cuongtq", "a12e5cbda3d441ff80fcb1d27c695e07");
             AssignUserToWallet("triethlm", "da5b74c41f92488cbe8d43c0b4a689d6");
+
+            AssignProblemParameter("d7c2a9e5f4b0a3f8d6c1e9a7b3f5d2c4", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 10);
+            AssignProblemParameter("d7c2a9e5f4b0a3f8d6c1e9a7b3f5d2c4", "4b8f3a2c1d7e5b9a6c0f4d2e3b1a8c7d", 0.5);
+            AssignProblemParameter("1e6a3d5f8c2b4a9f0e3d7a5c6b9f1c8b", "b3f8a2d4e7c1b5a0d9f6c3a4e2b7d1f9", 30);
+            AssignProblemParameter("1e6a3d5f8c2b4a9f0e3d7a5c6b9f1c8b", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 10);
+            AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "1f6a3d8c4b9e7a5d2c0f3b4e9a6d7c5b", 45);
+            AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 10);
+            AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "4b8f3a2c1d7e5b9a6c0f4d2e3b1a8c7d", 0.7);
+            AssignProblemParameter("8f3c5a7d9b1e4c6f2a9b0d3e7f5a8c1d", "e5f3b1a9d6c2a7f4b8d1c0e9a3f5d2b7", 0.5);
+            AssignProblemParameter("8f3c5a7d9b1e4c6f2a9b0d3e7f5a8c1d", "b5e2a3f9c8d0f4a7b1c6e3d9a5b2f0c8", 0.2);
+            AssignProblemParameter("a6d8c1f5e3b2a9f7d4c0e8a5f3b1d9c6", "7f9a6e3d1c5b2a8f0d3b4e1a9c7f2b5d", 0.5);
+            AssignProblemParameter("a6d8c1f5e3b2a9f7d4c0e8a5f3b1d9c6", "e5f3b1a9d6c2a7f4b8d1c0e9a3f5d2b7", 0.5);
+
             _context.SaveChanges();
         }
 
@@ -255,7 +287,6 @@ namespace SWD392.Manim.Repositories
                 CreatedAt = DateTime.Now,
                 Status = true,
                 ChapterId = chapterId,
-                Parameters = CreatePendulumParameter("f8e4db932f474de39b3fcbb10f9f5b62")
             },
             new Topic
             {
@@ -264,7 +295,6 @@ namespace SWD392.Manim.Repositories
                 CreatedAt = DateTime.Now,
                 Status = true,
                 ChapterId = chapterId,
-                Parameters = CreateSpringParameter("c87d6b7f2a014f6b9193a3d28c819cd9")
             }
          ];
             return topics;
@@ -319,7 +349,7 @@ namespace SWD392.Manim.Repositories
             [
                 new Parameter
                 {
-                    Id = "f98c1b2a3d0145c78e5d6f3b9c4e7a1b",
+                    Id = "4b8f3a2c1d7e5b9a6c0f4d2e3b1a8c7d",
                     CreatedAt = DateTime.Now,
                     Symbol = "l",
                     Name = "Chiều dài",
@@ -328,7 +358,7 @@ namespace SWD392.Manim.Repositories
                 },
                 new Parameter
                 {
-                    Id = "b2e7c4f5d8a643f89c7b2d1e4a5f6b3c",
+                    Id = "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1",
                     CreatedAt = DateTime.Now,
                     Symbol = "g",
                     Name = "Gia tốc trọng trường",
@@ -337,45 +367,140 @@ namespace SWD392.Manim.Repositories
                 },
                 new Parameter
                 {
-                    Id = "a9d7c6b5f4e123f8b7d2c5a6e9b3c0d4",
+                    Id = "1f6a3d8c4b9e7a5d2c0f3b4e9a6d7c5b",
                     CreatedAt = DateTime.Now,
                     Symbol = "Ω",
                     Name = "Góc lệch ban đầu",
                     Unit = "°",
                     TopicId = topicId
-
                     },
                 new Parameter
                 {
-                    Id = "e4f7b8c9d0a1234b5c6d7a9e2f8b3c1d",
+                    Id = "b3f8a2d4e7c1b5a0d9f6c3a4e2b7d1f9",
                     CreatedAt = DateTime.Now,
                     Symbol = "T",
                     Name = "Chu kì giao động",
                     Unit = "s",
                     TopicId = topicId
-
                 },
                 new Parameter
                 {
-                    Id = "c3b7d5f9e6a842d7b8a1e5f0c6d3b2a9",
+                    Id = "c9e1a6b3d7f4c5a8b0d2e9f7a3c4b5d6",
                     CreatedAt = DateTime.Now,
-                    Symbol = "vmax",
+                    Symbol = "Vmax",
                     Name = "Vận tốc cực đại",
                     Unit = "m/s",
                     TopicId = topicId
                 },
+                //new Parameter
+                //{
+                //    Id = "6f7b4d3a2c9e8f1a0c5e3d9b7f4a1c8d",
+                //    CreatedAt = DateTime.Now,
+                //    Symbol = "E",
+                //    Name = "Năng lượng cơ học",
+                //    Unit = "J",
+                //    TopicId = topicId
+                //},
+                //new Parameter
+                //{
+                //    Id = "b5e2a3f9c8d0f4a7b1c6e3d9a5b2f0c7",
+                //    CreatedAt = DateTime.Now,
+                //    Symbol = "m",
+                //    Name = "Khối lượng",
+                //    Unit = "kg",
+                //    TopicId = topicId
+
+                //},
                 new Parameter
                 {
-                    Id = "2a6f5c3b1e9d7b0a4f8c6e3d5b1c2a9d",
+                    Id = "8d2f4c5a9b3e7a1f6c3d0b8e4a2f1c9d",
                     CreatedAt = DateTime.Now,
-                    Symbol = "E",
-                    Name = "Năng lượng cơ học",
-                    Unit = "J",
+                    Symbol = "π",
+                    Name = "Pi",
+                    TopicId = topicId
+                }
+            ];
+            return parameters;
+        }
+        public static Problem[] CreateProblem()
+        {
+            Problem[] problems =
+            [
+            //con lac lo xo
+                new Problem
+                {
+                    Id = "d7c2a9e5f4b0a3f8d6c1e9a7b3f5d2c4",
+                    CreatedAt = DateTime.Now,
+                    Description = "Tính chu kỳ dao động (T) của con lắc đơn khi biết chiều dài dây l và gia tốc trọng trường g",
+                    Price = 5000,
+                    Type = 1,
+                    Name = "Tìm T",
+                    TopicId = "f8e4db932f474de39b3fcbb10f9f5b62"
+                },
+                new Problem
+                {
+                    Id = "1e6a3d5f8c2b4a9f0e3d7a5c6b9f1c8b",
+                    CreatedAt = DateTime.Now,
+                    Description = "Tính độ dài (l) của con lắc khi biết chu kỳ dao động T và gia tốc trọng trường g",
+                    Price = 5000,
+                    Type = 2,
+                    Name = "Tìm l",
+                    TopicId = "f8e4db932f474de39b3fcbb10f9f5b62"
+
+                },
+                new Problem
+                {
+                    Id = "e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9",
+                    CreatedAt = DateTime.Now,
+                    Description = "Tính vận tốc cực đại (Vmax) của con lắc tại vị trí thấp nhất (vị trí cân bằng), khi biết góc lệch ban đầu, chiều dài dây l và gia tốc trọng trường g",
+                    Price = 5000,
+                    Type = 3,
+                    Name = "Tìm Vmax",
+                    TopicId = "f8e4db932f474de39b3fcbb10f9f5b62"
+
+                },
+                new Problem
+                {
+                    Id = "8f3c5a7d9b1e4c6f2a9b0d3e7f5a8c1d",
+                    CreatedAt = DateTime.Now,
+                    Description = "Tìm chu kì dao động (T) của con lắc lò xo hoặc tần số dao động của con lắc lò xo khi biết độ cứng k của lò xo và khối lượng m của vật.",
+                    Price = 5000,
+                    Type = 4,
+                    Name = "Tìm T",                    
+                    TopicId = "c87d6b7f2a014f6b9193a3d28c819cd9"
+
+                },
+                new Problem
+                {
+                    Id = "a6d8c1f5e3b2a9f7d4c0e8a5f3b1d9c6",
+                    CreatedAt = DateTime.Now,
+                    Description = "Tính năng lượng toàn phần (E) của con lắc lò xo khi biết biên độ dao động A và độ cứng k của lò xo.",
+                    Price = 5000,
+                    Type = 5,
+                    Name = "Tìm E",
+                    TopicId = "c87d6b7f2a014f6b9193a3d28c819cd9"
+
+                },
+            ];
+            return problems;
+        }
+        private static Parameter[] CreateSpringParameter(string topicId)
+        {
+            Parameter[] parameters =
+            [
+            //con lac lo xo
+                new Parameter
+                {
+                    Id = "7f9a6e3d1c5b2a8f0d3b4e1a9c7f2b5d",
+                    CreatedAt = DateTime.Now,
+                    Symbol = "A",
+                    Name = "Biên độ dao động",
+                    Unit = "m",
                     TopicId = topicId
                 },
                 new Parameter
                 {
-                    Id = "3b9f4c1e5a7d6b8f0c3a2d9e6b1f7d4a",
+                    Id = "b5e2a3f9c8d0f4a7b1c6e3d9a5b2f0c8",
                     CreatedAt = DateTime.Now,
                     Symbol = "m",
                     Name = "Khối lượng",
@@ -385,68 +510,55 @@ namespace SWD392.Manim.Repositories
                 },
                 new Parameter
                 {
-                    Id = "e5a6f3b8c7d4b9a2f0d3e1c5a8b7f6c1",
+                    Id = "b2c7f1a4e8d5c0a3b9f6e4a7c3d2b8f5",
                     CreatedAt = DateTime.Now,
-                    Symbol = "π",
-                    Name = "Pi",
-                    TopicId = topicId
-                }
-            ];
-            return parameters;
-
-        }
-        private static Parameter[] CreateSpringParameter(string topicId)
-        {
-            Parameter[] parameters =
-            [
-            //con lac lo xo
-                new Parameter
-                {
-                    Id = "d1b4c9f5a2e7b3c6d8a1e9f0c7b3f4a5",
-                    CreatedAt = DateTime.Now,
-                    Symbol = "A",
-                    Name = "Biên độ dao động",
-                    Unit = "m",
-                    TopicId = topicId
-                },
-                new Parameter
-                {
-                    Id = "a8d5c6f1b4e3a9c7f2d0b5e8a3c4f9b2",
-                    CreatedAt = DateTime.Now,
-                    Symbol = "A",
+                    Symbol = "E",
                     Name = "Năng lượng toàn phần",
                     Unit = "J",
                     TopicId = topicId
                 },
                 new Parameter
                 {
-                    Id = "7f2a4c8b5d9e6a3b1c7d0f4b8e2a1f5c",
+                    Id = "e5f3b1a9d6c2a7f4b8d1c0e9a3f5d2b7",
                     CreatedAt = DateTime.Now,
                     Symbol = "k",
                     Name = "Độ cứng",
                     Unit = "N/m",
                     TopicId = topicId
-                }, 
+                },
                 new Parameter
                 {
-                    Id = "e4f7b8c9d0a1234b5c6d7a9e2f8b3c1d",
+                    Id = "c4d8a3f1e7b0c9a5f2b6e3d4a1c9f7b8",
                     CreatedAt = DateTime.Now,
                     Symbol = "T",
                     Name = "Chu kì giao động",
                     Unit = "s",
                     TopicId = topicId
                 },
-                new Parameter
-                {
-                    Id = "c9e3f1b7d4a2b8c5f0d7e6b3a1c8f5d2",
-                    CreatedAt = DateTime.Now,
-                    Symbol = "x",
-                    Name = "Vật cách vị trí cân bằng",
-                    Unit = "m",
-                    TopicId = topicId
-                },
+                //new Parameter
+                //{
+                //    Id = "9f5a2b8c3d4e0a7f6c1d3e5a9b4f8c2d",
+                //    CreatedAt = DateTime.Now,
+                //    Symbol = "x",
+                //    Name = "Vật cách vị trí cân bằng",
+                //    Unit = "m",
+                //    TopicId = topicId
+                //},
             ];
             return parameters;
+        }
+        public void AssignProblemParameter(string problemId, string parameterId, double value)
+        {
+            
+            ProblemParameter pp = new()
+            {
+                ParameterId = parameterId,
+                ProblemId = problemId,
+                Value = value,
+                CreatedAt = DateTime.Now
+            };
+            _context.ProblemParameters.Add(pp);
+            _context.SaveChanges();
         }
         private void AssignAdminRoleToUser(string username, string roleName)
         {
