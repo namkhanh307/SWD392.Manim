@@ -12,7 +12,7 @@ namespace SWD392.Manim.API.Controllers
     {
         private readonly IPayService _payService = payService;
 
-        [HttpPost("/create")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreatePaymentUrl([FromQuery] decimal balance)
         {
             try
