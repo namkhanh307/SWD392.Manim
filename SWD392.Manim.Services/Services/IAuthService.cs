@@ -1,5 +1,6 @@
 ﻿using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
+using SWD392.Manim.Repositories.ViewModel.UserVM;
 
 namespace SWD392.Manim.Services.Services
 {

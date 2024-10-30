@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
 using SWD392.Manim.Services.Services;
+using SWD392.Manim.Repositories.ViewModel.ChapterVM;
+using SWD392.Manim.Repositories.ViewModel.UserVM;
 
 namespace SWD392.Manim.API.Controllers
 {
@@ -43,6 +45,16 @@ namespace SWD392.Manim.API.Controllers
                 RedirectUri = Url.Action("SignInGoogle", "Auth")  // Generates the absolute path for redirect
             };
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("user/{id}")]
+        public async Task<IActionResult> GetUserById(Guid id)
+        {
+            var result = await _userService.GetUserById(id);
+            return Ok(new BaseResponseModel<GetUserVM>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
         }
 
         [HttpGet("google-auth/signin-google")]

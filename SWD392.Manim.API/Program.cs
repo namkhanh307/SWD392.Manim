@@ -19,7 +19,7 @@ try
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(name: CorsConstant.PolicyName,
-            policy => { policy.WithOrigins().AllowAnyHeader().AllowAnyMethod(); });
+            policy => { policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod(); });
     });
     builder.Services.AddControllers().AddJsonOptions(x =>
     {
@@ -57,9 +57,9 @@ try
 
     app.UseMiddleware<ExceptionMiddleware>();
     app.UseMiddleware<PermissionMiddleware>();
-    app.UseCors(CorsConstant.PolicyName);
     app.UseHttpsRedirection();
     app.UseRouting();
+    app.UseCors(CorsConstant.PolicyName);
     app.UseSwagger();
     app.UseAuthentication();
     app.UseAuthorization();
