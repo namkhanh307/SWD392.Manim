@@ -31,6 +31,23 @@ namespace SWD392.Manim.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Parameters",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Createdby = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Parameters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -338,13 +355,12 @@ namespace SWD392.Manim.Repositories.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Parameters",
+                name: "ProblemParameters",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Unit = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ParameterId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProblemId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<double>(type: "float", nullable: false),
                     Createdby = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -352,9 +368,15 @@ namespace SWD392.Manim.Repositories.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Parameters", x => x.Id);
+                    table.PrimaryKey("PK_ProblemParameters", x => new { x.ParameterId, x.ProblemId });
                     table.ForeignKey(
-                        name: "FK_Parameters_Problems_ProblemId",
+                        name: "FK_ProblemParameters_Parameters_ParameterId",
+                        column: x => x.ParameterId,
+                        principalTable: "Parameters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProblemParameters_Problems_ProblemId",
                         column: x => x.ProblemId,
                         principalTable: "Problems",
                         principalColumn: "Id",
@@ -379,35 +401,6 @@ namespace SWD392.Manim.Repositories.Migrations
                     table.PrimaryKey("PK_SolutionTypes", x => x.Id);
                     table.ForeignKey(
                         name: "FK_SolutionTypes_Problems_ProblemId",
-                        column: x => x.ProblemId,
-                        principalTable: "Problems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SolutionParameters",
-                columns: table => new
-                {
-                    ParameterId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProblemId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<double>(type: "float", nullable: false),
-                    Createdby = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SolutionParameters", x => new { x.ParameterId, x.ProblemId });
-                    table.ForeignKey(
-                        name: "FK_SolutionParameters_Parameters_ParameterId",
-                        column: x => x.ParameterId,
-                        principalTable: "Parameters",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_SolutionParameters_Problems_ProblemId",
                         column: x => x.ProblemId,
                         principalTable: "Problems",
                         principalColumn: "Id",
@@ -517,8 +510,8 @@ namespace SWD392.Manim.Repositories.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Parameters_ProblemId",
-                table: "Parameters",
+                name: "IX_ProblemParameters_ProblemId",
+                table: "ProblemParameters",
                 column: "ProblemId");
 
             migrationBuilder.CreateIndex(
@@ -543,11 +536,6 @@ namespace SWD392.Manim.Repositories.Migrations
                 table: "SolutionOutputs",
                 column: "SolutionId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SolutionParameters_ProblemId",
-                table: "SolutionParameters",
-                column: "ProblemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Solutions_SolutionTypeId",
@@ -627,13 +615,13 @@ namespace SWD392.Manim.Repositories.Migrations
                 name: "OTPs");
 
             migrationBuilder.DropTable(
+                name: "ProblemParameters");
+
+            migrationBuilder.DropTable(
                 name: "RoleClaims");
 
             migrationBuilder.DropTable(
                 name: "SolutionOutputs");
-
-            migrationBuilder.DropTable(
-                name: "SolutionParameters");
 
             migrationBuilder.DropTable(
                 name: "Transactions");

@@ -12,7 +12,7 @@ using SWD392.Manim.Repositories.Entity;
 namespace SWD392.Manim.Repositories.Migrations
 {
     [DbContext(typeof(Swd392Context))]
-    [Migration("20241028150615_init")]
+    [Migration("20241030045233_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -420,10 +420,6 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProblemId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Unit")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -432,8 +428,6 @@ namespace SWD392.Manim.Repositories.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ProblemId");
 
                     b.ToTable("Parameters", (string)null);
                 });
@@ -500,7 +494,7 @@ namespace SWD392.Manim.Repositories.Migrations
 
                     b.HasIndex("ProblemId");
 
-                    b.ToTable("SolutionParameters", (string)null);
+                    b.ToTable("ProblemParameters", (string)null);
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
@@ -842,17 +836,6 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Parameter", b =>
-                {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
-                        .WithMany()
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Problem");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Problem", b =>

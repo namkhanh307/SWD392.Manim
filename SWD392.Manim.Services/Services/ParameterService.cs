@@ -88,7 +88,7 @@ namespace SWD392.Manim.Services.Services
             }
 
             Parameter parameter = _mapper.Map<Parameter>(model);
-            parameter.ProblemId = problemTypeId;
+            //.ProblemId = problemTypeId;
             var subscriber = Connection.GetSubscriber();
             var inputParameterJson = $"{problemTypeId.ToString()};{parameter.Unit}";
 
