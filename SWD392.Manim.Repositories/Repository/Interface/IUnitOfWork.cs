@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace SWD392.Manim.Repositories.Repository.Interface
+﻿namespace SWD392.Manim.Repositories.Repository.Interface
 {
     public interface IUnitOfWork : IDisposable
     {

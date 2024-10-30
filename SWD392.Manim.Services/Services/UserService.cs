@@ -1,14 +1,11 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.ViewModel.AuthVM;
-using SWD392.Manim.Repositories;
 using Microsoft.EntityFrameworkCore;
-using MimeKit.Utils;
-using static System.Net.WebRequestMethods;
-using SWD392.Manim.Repositories.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
+using SWD392.Manim.Repositories.ViewModel.AuthVM;
 
 namespace SWD392.Manim.Services.Services
 {

@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
-using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.ViewModel.ParameterVM;
-using SWD392.Manim.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
+using SWD392.Manim.Repositories.ViewModel.ParameterVM;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -30,6 +30,8 @@ namespace SWD392.Manim.Services.Services
             Channel = new RedisChannel(configuration.GetSection("Redis").GetSection("Channel1").Value, RedisChannel.PatternMode.Literal);
             _httpContextAccessor = httpContextAccessor;
         }
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
+
         public async Task<PaginatedList<GetParametersVM>?> GetParameters(int index, int pageSize, string? id, string? nameSearch)
         {
             IQueryable<Parameter> query = _unitOfWork.GetRepository<Parameter>().Entities.Where(s => !s.DeletedAt.HasValue);
@@ -62,12 +64,11 @@ namespace SWD392.Manim.Services.Services
             Parameter? existedParam = await _unitOfWork.GetRepository<Parameter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Biến không tồn tại!");
             return _mapper.Map<GetParametersVM?>(existedParam);
         }
-        public async Task PostParameter(PostParameterVM model, string problemTypeId)
+        public async Task PostParameter(PostParameterVM model)
         {
-            string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
             Guid id;
             ApplicationUser? user = null;
-            if (Guid.TryParse(userId, out id))
+            if (Guid.TryParse(UserId, out id))
             {
                 user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
             }
@@ -75,11 +76,6 @@ namespace SWD392.Manim.Services.Services
             if (user == null)
             {
                 throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tài khoản không tồn tại!");
-            }
-            var problemType = await _unitOfWork.GetRepository<Problem>().Entities.Where(p => p.Id == problemTypeId).FirstOrDefaultAsync();
-            if (problemType == null)
-            {
-                throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Problem Type không tồn tại");
             }
             Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name).FirstOrDefaultAsync();
             if (existedParameter != null)
@@ -90,10 +86,10 @@ namespace SWD392.Manim.Services.Services
             Parameter parameter = _mapper.Map<Parameter>(model);
             //.ProblemId = problemTypeId;
             var subscriber = Connection.GetSubscriber();
-            var inputParameterJson = $"{problemTypeId.ToString()};{parameter.Unit}";
+            //var inputParameterJson = $"{problemTypeId.ToString()};{parameter.Unit}";
 
-            RedisValue redisValue = new RedisValue(inputParameterJson);
-            await subscriber.PublishAsync(Channel, redisValue);
+            //RedisValue redisValue = new RedisValue(inputParameterJson);
+            //await subscriber.PublishAsync(Channel, redisValue);
 
             await _unitOfWork.GetRepository<Parameter>().InsertAsync(parameter);
             await _unitOfWork.SaveAsync();
@@ -119,7 +115,5 @@ namespace SWD392.Manim.Services.Services
             await _unitOfWork.GetRepository<Parameter>().UpdateAsync(existedParameter);
             await _unitOfWork.SaveAsync();
         }
-
-
     }
 }

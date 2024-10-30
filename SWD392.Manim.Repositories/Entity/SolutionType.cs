@@ -7,7 +7,7 @@ namespace SWD392.Manim.Repositories.Entity
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string ProblemId { get; set; } = string.Empty;
-        public virtual Problem? Problem { get; set; }
-        public virtual Solution? Solution { get; set; }
+        //public virtual Problem? Problem { get; set; }
+        //public virtual Solution? Solution { get; set; }
     }
 }

@@ -1,26 +1,19 @@
 ﻿using AutoMapper;
-using Net.payOS.Types;
-using Net.payOS;
-using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.Repository.Interface;
-using SWD392.Manim.Repository.ViewModel.Wallet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Http;
-using SWD392.Manim.Repositories;
-using SWD392.Manim.Repositories.ViewModel.Wallet;
-using Newtonsoft.Json.Linq;
+using Net.payOS;
+using Net.payOS.Types;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
+using SWD392.Manim.Repositories.ViewModel.Wallet;
+using SWD392.Manim.Repository.ViewModel.Wallet;
+using System.Security.Cryptography;
+using System.Text;
 using Transaction = SWD392.Manim.Repositories.Entity.Transaction;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using static Org.BouncyCastle.Asn1.Cmp.Challenge;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -42,14 +35,14 @@ namespace SWD392.Manim.Services.Services
             _httpContextAccessor = httpContextAccessor;
             _client = client;
         }
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         public async Task<CreatePaymentResult> CreatePaymentUrlRegisterCreator(decimal balance)
         {
             try
             {
-                string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
                 Guid id;
                 ApplicationUser? user = null;
-                if (Guid.TryParse(userId, out id))
+                if (Guid.TryParse(UserId, out id))
                 {
                     user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
                 }
@@ -88,7 +81,7 @@ namespace SWD392.Manim.Services.Services
                 { "orderCode", orderCode },
                 { "returnUrl", _payOSSettings.ReturnUrl }
             };
-                
+
                 // Sort and compute the signature
                 var sortedSignatureData = new SortedDictionary<string, object>(signatureData);
                 var dataForSignature = string.Join("&", sortedSignatureData.Select(p => $"{p.Key}={p.Value}"));
@@ -190,7 +183,7 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new Exception("An error occurred while getting payment info.", ex);
             }
-         
+
         }
 
         private string? ComputeHmacSha256(string data, string checksumKey)
@@ -200,6 +193,19 @@ namespace SWD392.Manim.Services.Services
                 var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
                 return BitConverter.ToString(hash).Replace("-", "").ToLower();
             }
+        }
+
+        public async Task<GetWalletVM> GetWallet()
+        {
+            Guid id;
+            Guid.TryParse(UserId, out id);
+            Wallet? wallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(r => r.UserId == id).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Ví không tồn tại");
+            return new GetWalletVM()
+            {
+                Balance = wallet.Balance,
+                FullName = wallet.User != null ? wallet.User.FullName! : "Người dùng ẩn danh"
+            };
+
         }
     }
 }

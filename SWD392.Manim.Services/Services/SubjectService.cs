@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.ChapterVM;
 using SWD392.Manim.Repositories.ViewModel.SubjectVM;
-using SWD392.Manim.Services.Services;
-using SWD392.Manim.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace SWD392.Manim.Services.Services
 {

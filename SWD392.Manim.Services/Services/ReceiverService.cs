@@ -6,13 +6,7 @@ using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.Repository.Implement;
 using SWD392.Manim.Repositories.Repository.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -41,7 +35,7 @@ namespace SWD392.Manim.Services.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
 
-            
+
             var subscriber = Connection.GetSubscriber();
 
             await subscriber.SubscribeAsync(Channel, async (channel, message) =>

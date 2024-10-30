@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SWD392.Manim.Repository.ViewModel.Wallet
+﻿namespace SWD392.Manim.Repository.ViewModel.Wallet
 {
     public class PayOSSettings
     {

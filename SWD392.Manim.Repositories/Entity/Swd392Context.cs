@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 
 namespace SWD392.Manim.Repositories.Entity;
@@ -79,18 +78,6 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
         modelBuilder.Entity<Parameter>().ToTable("Parameters");
         modelBuilder.Entity<SolutionType>().ToTable("SolutionTypes");
         modelBuilder.Entity<ProblemParameter>().ToTable("ProblemParameters");
-
-        modelBuilder.Entity<SolutionType>()
-            .HasOne(s => s.Solution)
-            .WithOne(so => so.SolutionType)
-            .HasForeignKey<Solution>(so => so.SolutionTypeId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Solution>()
-            .HasOne(s => s.SolutionOutput)
-            .WithOne(so => so.Solution)
-            .HasForeignKey<SolutionOutput>(so => so.SolutionId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Deposit>()
             .HasOne(sp => sp.User)

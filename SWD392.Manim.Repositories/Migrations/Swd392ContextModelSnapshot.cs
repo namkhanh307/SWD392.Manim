@@ -417,6 +417,14 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TopicId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Unit")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -425,6 +433,8 @@ namespace SWD392.Manim.Repositories.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TopicId");
 
                     b.ToTable("Parameters", (string)null);
                 });
@@ -450,9 +460,15 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("TopicId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -512,10 +528,7 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("SolutionTypeId")
+                    b.Property<string>("ProblemId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -527,8 +540,7 @@ namespace SWD392.Manim.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SolutionTypeId")
-                        .IsUnique();
+                    b.HasIndex("ProblemId");
 
                     b.HasIndex("UserId");
 
@@ -559,15 +571,12 @@ namespace SWD392.Manim.Repositories.Migrations
 
                     b.Property<string>("SolutionId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("SolutionId")
-                        .IsUnique();
 
                     b.ToTable("SolutionOutputs", (string)null);
                 });
@@ -596,14 +605,12 @@ namespace SWD392.Manim.Repositories.Migrations
 
                     b.Property<string>("ProblemId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ProblemId");
 
                     b.ToTable("SolutionTypes", (string)null);
                 });
@@ -625,9 +632,6 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
@@ -835,6 +839,17 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Parameter", b =>
+                {
+                    b.HasOne("SWD392.Manim.Repositories.Entity.Topic", "Topic")
+                        .WithMany("Parameters")
+                        .HasForeignKey("TopicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Topic");
+                });
+
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Problem", b =>
                 {
                     b.HasOne("SWD392.Manim.Repositories.Entity.Topic", "Topic")
@@ -867,9 +882,9 @@ namespace SWD392.Manim.Repositories.Migrations
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
                 {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.SolutionType", "SolutionType")
-                        .WithOne("Solution")
-                        .HasForeignKey("SWD392.Manim.Repositories.Entity.Solution", "SolutionTypeId")
+                    b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
+                        .WithMany("Solutions")
+                        .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -879,31 +894,9 @@ namespace SWD392.Manim.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("SolutionType");
+                    b.Navigation("Problem");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionOutput", b =>
-                {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Solution", "Solution")
-                        .WithOne("SolutionOutput")
-                        .HasForeignKey("SWD392.Manim.Repositories.Entity.SolutionOutput", "SolutionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Solution");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionType", b =>
-                {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
-                        .WithMany("SolutionTypes")
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Problem");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Topic", b =>
@@ -975,19 +968,12 @@ namespace SWD392.Manim.Repositories.Migrations
                 {
                     b.Navigation("ProblemParameters");
 
-                    b.Navigation("SolutionTypes");
+                    b.Navigation("Solutions");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
                 {
-                    b.Navigation("SolutionOutput");
-
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionType", b =>
-                {
-                    b.Navigation("Solution");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Subject", b =>
@@ -997,6 +983,8 @@ namespace SWD392.Manim.Repositories.Migrations
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Topic", b =>
                 {
+                    b.Navigation("Parameters");
+
                     b.Navigation("Problems");
                 });
 

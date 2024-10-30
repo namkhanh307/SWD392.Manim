@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Net.payOS.Types;
 using SWD392.Manim.Repositories;
-using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.ViewModel.Wallet;
 using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Controllers
@@ -12,6 +12,15 @@ namespace SWD392.Manim.API.Controllers
     {
         private readonly IPayService _payService = payService;
 
+        [HttpGet("/getWallet")]
+        public async Task<IActionResult> GetWallet()
+        {
+            var result = await _payService.GetWallet();
+            return Ok(new BaseResponseModel<GetWalletVM>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+        }
         [HttpPost("/create")]
         public async Task<IActionResult> CreatePaymentUrl([FromQuery] decimal balance)
         {

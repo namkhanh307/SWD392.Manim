@@ -1,7 +1,7 @@
-﻿using SWD392.Manim.Repositories;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
 using SWD392.Manim.Services.Services;
 

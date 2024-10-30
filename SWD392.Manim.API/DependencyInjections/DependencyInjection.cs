@@ -1,16 +1,14 @@
-﻿using SWD392.Manim.Repositories.Repository.Implement;
-using SWD392.Manim.Repositories.Repository.Interface;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Implement;
+using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Services.Mapper;
-using System.Reflection;
-using Microsoft.AspNetCore.Authentication.Google;
 using SWD392.Manim.Services.Services;
-using Net.payOS;
 
 namespace SWD392.Manim.API.Extensions
 {
