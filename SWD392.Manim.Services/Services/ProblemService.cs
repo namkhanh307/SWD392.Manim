@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using StackExchange.Redis;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories.Repository.Interface;
@@ -9,10 +11,26 @@ using SWD392.Manim.Repositories.ViewModel.ProblemVM;
 
 namespace SWD392.Manim.Services.Services
 {
-    public class ProblemService(IMapper mapper, IUnitOfWork unitOfWork) : IProblemService
+    public class ProblemService : IProblemService
     {
-        private readonly IMapper _mapper = mapper;
-        private IUnitOfWork _unitOfWork = unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly string RedisConnectionString;
+        private readonly ConnectionMultiplexer Connection;
+        private readonly RedisChannel Channel;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public ProblemService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        {
+            _configuration = configuration;
+            _mapper = mapper;
+            _unitOfWork = unitOfWork;
+            RedisConnectionString = configuration.GetSection("Redis").GetSection("ConnectionString").Value;
+            Connection = ConnectionMultiplexer.Connect(RedisConnectionString);
+            Channel = new RedisChannel(configuration.GetSection("Redis").GetSection("Channel1").Value, RedisChannel.PatternMode.Literal);
+            _httpContextAccessor = httpContextAccessor;
+        }
 
         public async Task<PaginatedList<GetProblemsVM>?> GetProblems(int index, int pageSize, string? id, string? nameSearch)
         {
@@ -47,6 +65,7 @@ namespace SWD392.Manim.Services.Services
             Problem? existedProblem = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Vấn đề không tồn tại!");
             return _mapper.Map<GetProblemsVM?>(existedProblem);
         }
+
         public async Task PostProblem(PostProblemVM model)
         {
             Problem? existedProblem = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.Name == model.Name).FirstOrDefaultAsync();
@@ -54,7 +73,9 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên vấn đề đã tồn tại!");
             }
+            Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(model.TopicId); 
             Problem problem = _mapper.Map<Problem>(model);
+            List<string> parameterList = new();
             foreach (var item in model.PostPPVMs)
             {
                 ProblemParameter pp = new()
@@ -64,7 +85,16 @@ namespace SWD392.Manim.Services.Services
                     Value = item.Value,
                     CreatedAt = DateTime.Now,
                 };
+                await _unitOfWork.GetRepository<ProblemParameter>().InsertAsync(pp);
+                Parameter? parameter = await _unitOfWork.GetRepository<Parameter>().GetByIdAsync(item.ParameterId);
+                parameterList.Add(parameter.Symbol + ":" +pp.Value);
             }
+            string result = String.Join(",", parameterList);
+            var subscriber = Connection.GetSubscriber();
+            var inputParameterJson = $"{topic.Name};{problem.Type};{result}";
+
+            RedisValue redisValue = new RedisValue(inputParameterJson);
+            await subscriber.PublishAsync(Channel, redisValue);
             problem.CreatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Problem>().InsertAsync(problem);
             await _unitOfWork.SaveAsync();
