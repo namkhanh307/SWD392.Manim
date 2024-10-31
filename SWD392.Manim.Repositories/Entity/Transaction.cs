@@ -7,9 +7,9 @@ public partial class Transaction : BaseEntity
     public string? WalletId { get; set; }
     public string? SolutionId { get; set; }
     public string? DepositId { get; set; }
-    public string? Username { get; set; }
     public decimal? Amount { get; set; }
     public long OrderCode { get; set; }
+    public int Status {  get; set; }
     public DateTime? BillingDate { get; set; }
     public virtual Deposit? Deposit { get; set; }
     public virtual Solution? Solution { get; set; }

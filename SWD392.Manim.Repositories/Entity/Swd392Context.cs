@@ -19,8 +19,8 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
     public virtual DbSet<Deposit> Deposits { get; set; }
     public virtual DbSet<Problem> Problems { get; set; }
     public virtual DbSet<Solution> Solutions { get; set; }
-    public virtual DbSet<SolutionOutput> SolutionOutputs { get; set; }
-    public virtual DbSet<SolutionType> SolutionTypes { get; set; }
+   // public virtual DbSet<SolutionOutput> SolutionOutputs { get; set; }
+   // public virtual DbSet<SolutionType> SolutionTypes { get; set; }
     public virtual DbSet<ProblemParameter> ProblemParameters { get; set; }
     public virtual DbSet<Parameter> Parameters { get; set; }
     public virtual DbSet<Subject> Subjects { get; set; }
@@ -33,8 +33,8 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
     {
         //IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../SWD392.Manim.API")).AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
         //return configuration["ConnectionStrings:DefautDB"];
-        //return "server=manim.database.windows.net;database=swd-manim;uid=adminmanim;pwd=Jpassword@;TrustServerCertificate=True";
-        return "server=(local);database=SWD;uid=sa;pwd=12345678;Trusted_Connection=True;Trust Server Certificate=True;Timeout=30;";
+        return "server=manim.database.windows.net;database=swd-manim;uid=adminmanim;pwd=Jpassword@;TrustServerCertificate=True";
+        //return "server=(local);database=SWD;uid=sa;pwd=12345678;Trusted_Connection=True;Trust Server Certificate=True;Timeout=30;";
 
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -75,9 +75,9 @@ public class Swd392Context : IdentityDbContext<ApplicationUser, ApplicationRole,
             .HasForeignKey(w => w.UserId);
 
         modelBuilder.Entity<Solution>().ToTable("Solutions");
-        modelBuilder.Entity<SolutionOutput>().ToTable("SolutionOutputs");
+       // modelBuilder.Entity<SolutionOutput>().ToTable("SolutionOutputs");
         modelBuilder.Entity<Parameter>().ToTable("Parameters");
-        modelBuilder.Entity<SolutionType>().ToTable("SolutionTypes");
+       // modelBuilder.Entity<SolutionType>().ToTable("SolutionTypes");
         modelBuilder.Entity<ProblemParameter>().ToTable("ProblemParameters");
 
         modelBuilder.Entity<Deposit>()

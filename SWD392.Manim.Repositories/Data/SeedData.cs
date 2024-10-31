@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Utilities;
 using SWD392.Manim.Repositories.Entity;
 
 namespace SWD392.Manim.Repositories
@@ -54,6 +55,12 @@ namespace SWD392.Manim.Repositories
                 _context.AddRange(users);
             }
             _context.SaveChanges();
+            AssignAdminRoleToUser("khanhnvn", "AdminSystem");
+            AssignAdminRoleToUser("vudq", "User");
+            AssignAdminRoleToUser("cuongtd", "User");
+            AssignAdminRoleToUser("nghiatm", "User");
+            AssignAdminRoleToUser("cuongtq", "User");
+            AssignAdminRoleToUser("triethlm", "User");
             data = _context.Subjects.Count();
             if (data is 0)
             {
@@ -83,28 +90,23 @@ namespace SWD392.Manim.Repositories
             if (data is 0)
             {
                 Problem[] problems = CreateProblem();
-                AssignProblemParameter("d7c2a9e5f4b0a3f8d6c1e9a7b3f5d2c4", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 10);
-                AssignProblemParameter("d7c2a9e5f4b0a3f8d6c1e9a7b3f5d2c4", "4b8f3a2c1d7e5b9a6c0f4d2e3b1a8c7d", 0.5);
-                AssignProblemParameter("1e6a3d5f8c2b4a9f0e3d7a5c6b9f1c8b", "b3f8a2d4e7c1b5a0d9f6c3a4e2b7d1f9", 30);
-                AssignProblemParameter("1e6a3d5f8c2b4a9f0e3d7a5c6b9f1c8b", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 10);
-                AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "1f6a3d8c4b9e7a5d2c0f3b4e9a6d7c5b", 45);
-                AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 10);
-                AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "4b8f3a2c1d7e5b9a6c0f4d2e3b1a8c7d", 0.7);
-                AssignProblemParameter("8f3c5a7d9b1e4c6f2a9b0d3e7f5a8c1d", "e5f3b1a9d6c2a7f4b8d1c0e9a3f5d2b7", 0.5);
-                AssignProblemParameter("8f3c5a7d9b1e4c6f2a9b0d3e7f5a8c1d", "b5e2a3f9c8d0f4a7b1c6e3d9a5b2f0c8", 0.2);
-                AssignProblemParameter("a6d8c1f5e3b2a9f7d4c0e8a5f3b1d9c6", "7f9a6e3d1c5b2a8f0d3b4e1a9c7f2b5d", 0.5);
-                AssignProblemParameter("a6d8c1f5e3b2a9f7d4c0e8a5f3b1d9c6", "e5f3b1a9d6c2a7f4b8d1c0e9a3f5d2b7", 0.5);
+                _context.AddRange(problems);
+                _context.SaveChanges();
+                AssignProblemParameter("d7c2a9e5f4b0a3f8d6c1e9a7b3f5d2c4", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 0);
+                AssignProblemParameter("d7c2a9e5f4b0a3f8d6c1e9a7b3f5d2c4", "4b8f3a2c1d7e5b9a6c0f4d2e3b1a8c7d", 0);
+                AssignProblemParameter("1e6a3d5f8c2b4a9f0e3d7a5c6b9f1c8b", "b3f8a2d4e7c1b5a0d9f6c3a4e2b7d1f9", 0);
+                AssignProblemParameter("1e6a3d5f8c2b4a9f0e3d7a5c6b9f1c8b", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 0);
+                AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "1f6a3d8c4b9e7a5d2c0f3b4e9a6d7c5b", 0);
+                AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "e7a9c5d4f2b0a3c6f8d1e3b7c9a4f6b1", 0);
+                AssignProblemParameter("e2b4a1f5d7c8a3e0f6b9c5a7d4b3f2e9", "4b8f3a2c1d7e5b9a6c0f4d2e3b1a8c7d", 0);
+                AssignProblemParameter("8f3c5a7d9b1e4c6f2a9b0d3e7f5a8c1d", "e5f3b1a9d6c2a7f4b8d1c0e9a3f5d2b7", 0);
+                AssignProblemParameter("8f3c5a7d9b1e4c6f2a9b0d3e7f5a8c1d", "b5e2a3f9c8d0f4a7b1c6e3d9a5b2f0c8", 0);
+                AssignProblemParameter("a6d8c1f5e3b2a9f7d4c0e8a5f3b1d9c6", "7f9a6e3d1c5b2a8f0d3b4e1a9c7f2b5d", 0);
+                AssignProblemParameter("a6d8c1f5e3b2a9f7d4c0e8a5f3b1d9c6", "e5f3b1a9d6c2a7f4b8d1c0e9a3f5d2b7", 0);
                 _context.AddRange(problems);
 
             }
-            _context.SaveChanges(); 
- 
-            AssignAdminRoleToUser("khanhnvn", "AdminSystem");
-            AssignAdminRoleToUser("vudq", "User");
-            AssignAdminRoleToUser("cuongtd", "User");
-            AssignAdminRoleToUser("nghiatm", "User");
-            AssignAdminRoleToUser("cuongtq", "User");
-            AssignAdminRoleToUser("triethlm", "User");
+            _context.SaveChanges();    
 
             AssignUserToWallet("khanhnvn", "b7d5c4a28e9346fa9eab3c9d2f7804b6");
             AssignUserToWallet("vudq", "8a9b4c32e7f245e0b8a123d9f4c6b5e1");
