@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
+using SWD392.Manim.Repositories.ViewModel.ChapterVM;
+using SWD392.Manim.Repositories.ViewModel.UserVM;
 using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Controllers
@@ -98,6 +100,24 @@ namespace SWD392.Manim.API.Controllers
                 // Log the exception and provide user feedback
                 return Problem("An error occurred during Google sign-in.");
             }
+        }
+        [HttpPut("UpdateProfile")]
+        public async Task<IActionResult> UpdateProfile(PutUserVM model)
+        {
+            await _userService.UpdateProfile(model);
+            return Ok(new BaseResponseModel<string>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: "Cập nhật thành công"));
+        }
+        [HttpPut("ChangePassword")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordVM model)
+        {
+            await _userService.ChangePassword(model);
+            return Ok(new BaseResponseModel<string>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: "Cập nhật thành công"));
         }
     }
 }

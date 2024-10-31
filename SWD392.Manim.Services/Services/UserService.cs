@@ -6,6 +6,7 @@ using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
+using SWD392.Manim.Repositories.ViewModel.UserVM;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -17,6 +18,7 @@ namespace SWD392.Manim.Services.Services
         private readonly IMapper _mapper;
         private readonly IAuthService _authService;
 
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         public UserService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IMapper mapper, IAuthService authService)
         {
             _unitOfWork = unitOfWork;
@@ -74,7 +76,7 @@ namespace SWD392.Manim.Services.Services
             var account = await _unitOfWork.GetRepository<ApplicationUser>().Entities.FirstOrDefaultAsync(p => p.Email.Equals(email));
             if (account == null) throw new BadHttpRequestException("Account not found");
             var guidClaim = new Tuple<string, Guid>("userId", account.Id);
-            ApplicationUserRoles roleUser = _unitOfWork.GetRepository<ApplicationUserRoles>().Entities.Where(x => x.UserId == account.Id).FirstOrDefault();
+            ApplicationUserRoles? roleUser = _unitOfWork.GetRepository<ApplicationUserRoles>().Entities.Where(x => x.UserId == account.Id).FirstOrDefault();
             string role = _unitOfWork.GetRepository<ApplicationRole>().Entities.Where(x => x.Id == roleUser.RoleId).Select(x => x.Name).FirstOrDefault()
              ?? "unknow";
             var token = _authService.GenerateTokens(account, role);
@@ -89,6 +91,34 @@ namespace SWD392.Manim.Services.Services
             var account = await _unitOfWork.GetRepository<ApplicationUser>().Entities.FirstOrDefaultAsync(p => p.Email.Equals(email)
             );
             return account != null;
+        }
+
+        public async Task UpdateProfile(PutUserVM model)
+        {
+            Guid id;
+            Guid.TryParse(UserId, out id);
+            ApplicationUser currentUser = await _unitOfWork.GetRepository<ApplicationUser>().GetByIdAsync(id);
+            _mapper.Map(model, currentUser);
+            await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(currentUser);
+            await _unitOfWork.SaveAsync();
+           
+        }
+
+        public async Task ChangePassword(ChangePasswordVM model)
+        {
+            Guid.TryParse(UserId, out Guid id);
+            ApplicationUser? user = _unitOfWork.GetRepository<ApplicationUser>().GetById(id) ?? throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Người dùng không tồn tại!");
+            string? password = user.PasswordHash;
+            if (password == null || !password.Equals(HashPasswordService.HashPasswordThrice(model.OldPassword)))
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Mật khẩu  cũ không chính xác!");
+            }
+            if (!model.Password.Equals(model.ConfirmPassword)) throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Mật khẩu confirm không trùng khớp!");
+            if (!model.Password.Equals(model.OldPassword)) throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Mật khẩu mới trùng với mật khẩu cũ! Vui lòng nhập lại mật khẩu mới!"); ;
+            user.PasswordHash = HashPasswordService.HashPasswordThrice(model.Password);
+            await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(user);
+            await _unitOfWork.SaveAsync();
+
         }
     }
 }

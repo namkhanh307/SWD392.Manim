@@ -56,5 +56,14 @@ namespace SWD392.Manim.API.Controllers
                 code: ResponseCodeConstants.SUCCESS,
                 data: "Xoa thành công"));
         }
+        [HttpPost("purchaseProblem")]
+        public async Task<IActionResult> PurchaseProblem(PurchaseProblemVM model)
+        {
+            await _problemService.PurchaseProblem(model);
+            return Ok(new BaseResponseModel<string>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: "Mua giai phap thanh cong"));
+        }
     }
 }

@@ -10,5 +10,7 @@ namespace SWD392.Manim.Services.Services
         Task<PaginatedList<GetProblemsVM>?> GetProblems(int index, int pageSize, string? id, string? nameSearch);
         Task PostProblem(PostProblemVM model);
         Task PutProblem(string id, PostProblemVM model);
+        Task PurchaseProblem(PurchaseProblemVM model);
+
     }
 }

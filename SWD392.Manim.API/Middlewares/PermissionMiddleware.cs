@@ -34,7 +34,7 @@ namespace SWD392.Manim.API.Middlewares
             _rolePermissions = new Dictionary<string, List<string>>()
             {
                 //author bang role, roleClaim userClaim
-                { "User", new List<string> { "/api/subjects", "/api/wallet/"} }
+                { "User", new List<string> { "/api/subjects", "/api/wallet/", "/api/auth/UpdateProfile"} }
             };
 
         }

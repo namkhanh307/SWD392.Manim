@@ -31,6 +31,7 @@ namespace SWD392.Manim.Services.Services
             Channel = new RedisChannel(configuration.GetSection("Redis").GetSection("Channel1").Value, RedisChannel.PatternMode.Literal);
             _httpContextAccessor = httpContextAccessor;
         }
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
 
         public async Task<PaginatedList<GetProblemsVM>?> GetProblems(int index, int pageSize, string? id, string? nameSearch)
         {
@@ -65,7 +66,33 @@ namespace SWD392.Manim.Services.Services
             Problem? existedProblem = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Vấn đề không tồn tại!");
             return _mapper.Map<GetProblemsVM?>(existedProblem);
         }
+        public async Task PurchaseProblem(PurchaseProblemVM model)
+        {
+            Problem? problem = await _unitOfWork.GetRepository<Problem>().GetByIdAsync(model.ProblemId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Vấn đề không tồn tại!");
+            Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(problem.TopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại!");
 
+            List<string> parameterList = new();
+            foreach (var item in model.PostPPVMs)
+            {
+                Parameter? parameter = await _unitOfWork.GetRepository<Parameter>().GetByIdAsync(item.ParameterId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tham so không tồn tại!");
+
+                parameterList.Add(parameter.Symbol + ":" + item.Value);
+            }
+            string result = String.Join(",", parameterList);
+            var subscriber = Connection.GetSubscriber();
+            if (topic.Name.Equals("Con lắc lò xo"))
+            {
+                topic.Name = "Spring";
+            }
+            else if (topic.Name.Equals("Con lắc đơn"))
+            {
+                topic.Name = "Pendulum";
+            }
+            var inputParameterJson = $"{UserId};{problem.Id};{problem.Name};{topic.Name};{problem.Type};{result}";
+
+            RedisValue redisValue = new RedisValue(inputParameterJson);
+            await subscriber.PublishAsync(Channel, redisValue);
+        }
         public async Task PostProblem(PostProblemVM model)
         {
             Problem? existedProblem = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.Name == model.Name).FirstOrDefaultAsync();
@@ -75,26 +102,17 @@ namespace SWD392.Manim.Services.Services
             }
             Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(model.TopicId); 
             Problem problem = _mapper.Map<Problem>(model);
-            List<string> parameterList = new();
             foreach (var item in model.PostPPVMs)
             {
                 ProblemParameter pp = new()
                 {
                     ParameterId = item.ParameterId,
                     ProblemId = problem.Id,
-                    Value = item.Value,
+                    Value = 0,
                     CreatedAt = DateTime.Now,
                 };
                 await _unitOfWork.GetRepository<ProblemParameter>().InsertAsync(pp);
-                Parameter? parameter = await _unitOfWork.GetRepository<Parameter>().GetByIdAsync(item.ParameterId);
-                parameterList.Add(parameter.Symbol + ":" +pp.Value);
             }
-            string result = String.Join(",", parameterList);
-            var subscriber = Connection.GetSubscriber();
-            var inputParameterJson = $"{topic.Name};{problem.Type};{result}";
-
-            RedisValue redisValue = new RedisValue(inputParameterJson);
-            await subscriber.PublishAsync(Channel, redisValue);
             problem.CreatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Problem>().InsertAsync(problem);
             await _unitOfWork.SaveAsync();
