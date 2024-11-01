@@ -11,5 +11,6 @@ namespace SWD392.Manim.Repositories.Enum
         Pending,
         Complete,
         Cancel,
+        //Status
     }
 }
