@@ -18,7 +18,7 @@ try
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(name: CorsConstant.PolicyName,
-            policy => { policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod(); });
+            policy => { policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); });
     });
     builder.Services.AddControllers().AddJsonOptions(x =>
     {
