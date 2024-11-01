@@ -7,6 +7,11 @@ using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
 using SWD392.Manim.Repositories.ViewModel.UserVM;
+using MimeKit.Utils;
+using static System.Net.WebRequestMethods;
+using SWD392.Manim.Repositories.Infrastructure;
+using SWD392.Manim.Repositories.ViewModel.UserVM;
+using SWD392.Manim.Repositories.ViewModel.ChapterVM;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -118,6 +123,12 @@ namespace SWD392.Manim.Services.Services
             user.PasswordHash = HashPasswordService.HashPasswordThrice(model.Password);
             await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(user);
             await _unitOfWork.SaveAsync();
+        }
+
+        public async Task<GetUserVM> GetUserById(Guid id)
+        {
+            ApplicationUser? user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.FirstOrDefaultAsync(p => p.Id == id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.BADREQUEST, "Không tìm thấy người dùng"); ;
+            return _mapper.Map<GetUserVM>(user);
 
         }
     }
