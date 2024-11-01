@@ -81,7 +81,7 @@ namespace SWD392.Manim.Services.Services
                 Solution solution = new Solution()
                 {
                     Url = url,
-                    Description = $"Solution for {problem.Description} with {descriptionParam}",
+                    Description = $"Giải pháp cho {problem.Description} với những tham số {descriptionParam}",
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     ProblemId = problemId,

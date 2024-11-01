@@ -7,7 +7,9 @@ namespace SWD392.Manim.Repositories.ViewModel.SolutionVM
         public string ProblemName { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;
         public string UserUserName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+
         public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
     }
 }
