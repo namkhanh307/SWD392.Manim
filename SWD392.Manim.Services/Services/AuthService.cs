@@ -56,7 +56,8 @@ namespace SWD392.Manim.Services.Services
             return new GetSignInVM()
             {
                 User = _mapper.Map<GetUserVM>(user),
-                Token = token
+                Token = token,
+                Role = role,
             };
         }
 
