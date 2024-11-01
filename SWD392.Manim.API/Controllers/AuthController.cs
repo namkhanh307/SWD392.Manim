@@ -47,6 +47,16 @@ namespace SWD392.Manim.API.Controllers
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }
 
+        [HttpGet("user/{id}")]
+        public async Task<IActionResult> GetUserById(Guid id)
+        {
+            var result = await _userService.GetUserById(id);
+            return Ok(new BaseResponseModel<GetUserVM>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+        }
+
         [HttpGet("google-auth/signin-google")]
         public async Task<IActionResult> SignInGoogle()
         {

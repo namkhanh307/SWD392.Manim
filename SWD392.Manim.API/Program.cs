@@ -56,9 +56,9 @@ try
 
     app.UseMiddleware<ExceptionMiddleware>();
     app.UseMiddleware<PermissionMiddleware>();
-    app.UseCors(CorsConstant.PolicyName);
     app.UseHttpsRedirection();
     app.UseRouting();
+    app.UseCors(CorsConstant.PolicyName);
     app.UseSwagger();
     app.UseAuthentication();
     app.UseAuthorization();

@@ -651,6 +651,9 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<string>("SolutionId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 

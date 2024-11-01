@@ -10,6 +10,6 @@ namespace SWD392.Manim.Services.Services
         Task<GetSignInByGoogleVM> CreateNewUserAccountByGoogle(GoogleAuthVM response);
         Task UpdateProfile(PutUserVM model);
         Task ChangePassword(ChangePasswordVM model);
-
+        Task<GetUserVM> GetUserById(Guid id);
     }
 }
