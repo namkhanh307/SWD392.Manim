@@ -9,5 +9,6 @@ namespace SWD392.Manim.Services.Services
         Task<GetSignInVM> SignIn(PostSignInVM model);
         Task SignUp(PostSignUpVM model);
         GetTokenVM GenerateTokens(ApplicationUser user, string role);
+        Task<bool> VerifyOtp(string UserId, string otpCheck);
     }
 }
