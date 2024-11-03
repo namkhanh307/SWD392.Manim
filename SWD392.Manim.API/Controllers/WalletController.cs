@@ -61,7 +61,7 @@ namespace SWD392.Manim.API.Controllers
                     }
                     else
                     {
-                        return Content($"Thanh toán thành công. Mã giao dịch: {orderCode}, nhưng không thể cộng tiền vào ví.");
+                        return Content($"Thanh toán thành công. Mã giao dịch: {orderCode}, Đã cộng tiền vào ví.");
                     }
                 }
                 catch (Exception ex)

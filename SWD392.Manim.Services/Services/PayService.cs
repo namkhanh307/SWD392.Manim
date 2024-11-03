@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Enum;
 using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.Wallet;
 using SWD392.Manim.Repository.ViewModel.Wallet;
@@ -113,7 +114,8 @@ namespace SWD392.Manim.Services.Services
                     DepositId = deposit.Id,
                     CreatedAt = DateTime.Now,
                     WalletId = wallet.Id,
-                    OrderCode = orderCode
+                    OrderCode = orderCode,
+                    Status = EnumStatus.Pending
                 };
                 await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
                 await _unitOfWork.GetRepository<Deposit>().InsertAsync(deposit);
@@ -140,13 +142,17 @@ namespace SWD392.Manim.Services.Services
                 // Nếu thanh toán thành công, cập nhật số dư ví
                 if (paymentInfo.Status == "PAID")
                 {
-                    var transaction = _unitOfWork.GetRepository<Transaction>().Entities.Where(t => t.OrderCode == orderCode).FirstOrDefault();
-                    var wallet = _unitOfWork.GetRepository<Wallet>().Entities.Where(w => w.Id == transaction.WalletId).FirstOrDefault();
-
-                    if (wallet != null)
+                    var transaction = _unitOfWork.GetRepository<Transaction>().Entities.Where(t => t.OrderCode == orderCode && t.Status == EnumStatus.Pending).FirstOrDefault();
+                    if(transaction != null)
                     {
-                        wallet.Balance += paymentInfo.Amount;
-                        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+                        var wallet = _unitOfWork.GetRepository<Wallet>().Entities.Where(w => w.Id == transaction.WalletId).FirstOrDefault();
+
+                        if (wallet != null)
+                        {
+                            wallet.Balance += paymentInfo.Amount;
+                            await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);                            
+                        }
+                        transaction.Status = EnumStatus.Complete;
                         await _unitOfWork.SaveAsync();
                         return true;
                     }

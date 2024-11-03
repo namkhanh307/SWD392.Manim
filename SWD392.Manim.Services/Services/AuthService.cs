@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MimeKit.Utils;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories.Infrastructure;
@@ -15,6 +16,7 @@ using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -81,7 +83,8 @@ namespace SWD392.Manim.Services.Services
                 Email = model.Email,
                 Gender = model.Gender,
                 FullName = model.FullName,
-                CreateAt = DateTime.Now
+                CreateAt = DateTime.Now,
+                Status = false
             };
 
             ApplicationRole roleUser = _unitOfWork.GetRepository<ApplicationRole>().Entities.Where(x => x.Name == "User").FirstOrDefault()
@@ -111,6 +114,7 @@ namespace SWD392.Manim.Services.Services
                 IsValid = true
             };
             await SendOtpEmail(newUser.Email, otp);
+            ScheduleOtpCancellation(otpRecord.Id, TimeSpan.FromMinutes(10));
             await _unitOfWork.GetRepository<OTP>().InsertAsync(otpRecord);
             await _unitOfWork.GetRepository<ApplicationUserRoles>().InsertAsync(userRoles);
             await _unitOfWork.GetRepository<ApplicationUser>().InsertAsync(newUser);
@@ -212,6 +216,44 @@ namespace SWD392.Manim.Services.Services
             };
         }
 
+        public async Task<bool> VerifyOtp(string UserId, string otpCheck)
+        {
+            var otp = await _unitOfWork.GetRepository<OTP>()
+                                        .Entities
+                                        .Where(o => o.Code == otpCheck && o.UserId == UserId && o.IsValid && DateTime.Now < o.ExpiredAt)
+                                        .SingleOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "OTP không tồn tại hoặc hết hạn!");
 
+            if (Guid.TryParse(UserId, out Guid userId))
+            {
+                var user = await _unitOfWork.GetRepository<ApplicationUser>()
+                    .Entities
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    user.Status = true;
+                    await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(user);
+                    await _unitOfWork.GetRepository<OTP>().DeleteAsync(otp);
+                    await _unitOfWork.SaveAsync();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private async Task ScheduleOtpCancellation(string otpId, TimeSpan delay)
+        {
+            await Task.Delay(delay);
+
+            var otpRepository = _unitOfWork.GetRepository<OTP>();
+            var otp = await otpRepository.Entities.Where(o => o.Id == otpId).SingleOrDefaultAsync();
+
+            if (otp != null && otp.IsValid && DateTime.Now >= otp.ExpiredAt)
+            {
+                otp.IsValid = false;
+                await otpRepository.DeleteAsync(otp);
+                var saveResult = _unitOfWork.SaveAsync();
+            }
+        }
     }
 }

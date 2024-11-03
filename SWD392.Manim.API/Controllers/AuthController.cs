@@ -129,5 +129,16 @@ namespace SWD392.Manim.API.Controllers
                 code: ResponseCodeConstants.SUCCESS,
                 data: "Cập nhật thành công"));
         }
+        [HttpPost("Verify")]
+        public async Task<IActionResult> VerifyOtp([FromBody] PostVerifyVM postVerifyVM)
+        {
+            // Gọi phương thức dịch vụ để xác thực OTP
+            await _authService.VerifyOtp(postVerifyVM.UserId, postVerifyVM.Otp);
+
+            return Ok(new BaseResponseModel<bool>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: true));
+        }
     }
 }
