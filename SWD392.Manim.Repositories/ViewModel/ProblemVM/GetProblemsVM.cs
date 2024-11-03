@@ -1,3 +1,5 @@
+using SWD392.Manim.Repositories.ViewModel.ProblemParameterVM;
+
 namespace SWD392.Manim.Repositories.ViewModel.ProblemVM
 {
     public class GetProblemsVM
@@ -7,5 +9,7 @@ namespace SWD392.Manim.Repositories.ViewModel.ProblemVM
         public string TopicName { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public ICollection<GetPPVM> GetPPVM { get; set; } = new List<GetPPVM>();
+
     }
 }
