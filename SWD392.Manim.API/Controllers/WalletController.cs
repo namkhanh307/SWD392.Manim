@@ -39,7 +39,6 @@ namespace SWD392.Manim.API.Controllers
         [HttpGet("ReturnUrl")]
         public async Task<IActionResult> ReturnUrl()
         {
-
             // Lấy các tham số từ query string
             string responseCode = Request.Query["code"].ToString();
             string id = Request.Query["id"].ToString();
@@ -54,15 +53,7 @@ namespace SWD392.Manim.API.Controllers
                     // Gọi service để cộng tiền vào ví
 
                     bool isSuccess = await _payService.HandlePaymentCallback(id, long.Parse(orderCode));
-
-                    if (isSuccess)
-                    {
-                        return Content($"Thanh toán thành công. Mã giao dịch: {orderCode}. Đã cộng tiền vào ví.");
-                    }
-                    else
-                    {
-                        return Content($"Thanh toán thành công. Mã giao dịch: {orderCode}, không cộng tiền vào ví.");
-                    }
+                    return Content($"Thanh toán thành công. Mã giao dịch: {orderCode}. Đã cộng tiền vào ví.");
                 }
                 catch (Exception ex)
                 {
