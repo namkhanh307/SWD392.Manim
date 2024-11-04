@@ -11,7 +11,7 @@ namespace SWD392.Manim.Services.Services
     public interface ITransactionService
     {
         Task<GetTransactionsVM> GetTransactionById(string id);
-        Task<PaginatedList<GetTransactionsVM>?> GetTransactions(int index, int pageSize, string? id, string? nameSearch);
+        Task<PaginatedList<GetTransactionsVM>?> GetTransactions(int index, int pageSize);
 
     }
 }

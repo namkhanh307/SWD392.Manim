@@ -136,7 +136,7 @@ namespace SWD392.Manim.API.Extensions
             services.AddAutoMapper(typeof(SubjectProfile).Assembly);
             services.AddAutoMapper(typeof(TopicProfile).Assembly);
             services.AddAutoMapper(typeof(ParameterProfile).Assembly);
-
+            services.AddAutoMapper(typeof(TransactionProfile).Assembly);
         }
         public static void AddServices(this IServiceCollection services)
         {
@@ -169,6 +169,7 @@ namespace SWD392.Manim.API.Extensions
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITopicService, TopicService>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<ITransactionService, TransactionService>();
         }
 
         public static void SeedData(this IServiceCollection services)

@@ -16,9 +16,9 @@ namespace SWD392.Manim.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetTransactions(int index = 1, int pageSize = 10, string? id = null, string? nameSearch = null)
+        public async Task<IActionResult> GetTransactions(int index = 1, int pageSize = 10)
         {
-            var result = await _transactionService.GetTransactions(index, pageSize, id, nameSearch);
+            var result = await _transactionService.GetTransactions(index, pageSize);
             return Ok(new BaseResponseModel<PaginatedList<GetTransactionsVM>?>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
