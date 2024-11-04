@@ -16,10 +16,7 @@ namespace SWD392.Manim.Repositories.ViewModel.TransactionVM
         public decimal? Amount { get; set; } 
         public long OrderCode { get; set; }
         public EnumStatus Status { get; set; }
-        
-        
-        
-        
+
     }
 }
 

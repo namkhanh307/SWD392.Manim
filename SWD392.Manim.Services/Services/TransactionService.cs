@@ -11,6 +11,7 @@ using AutoMapper;
 using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using SWD392.Manim.Repositories.Enum;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -18,11 +19,13 @@ namespace SWD392.Manim.Services.Services
     {
         private readonly IMapper _mapper;
         private IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public TransactionService(IMapper mapper, IUnitOfWork unitOfWork)
+        public TransactionService(IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<GetTransactionsVM> GetTransactionById(string id)
@@ -36,23 +39,20 @@ namespace SWD392.Manim.Services.Services
             return _mapper.Map<GetTransactionsVM?>(existedSolution);
         }
 
-        public async Task<Repositories.PaginatedList<GetTransactionsVM>?> GetTransactions(int index, int pageSize, string? id, string? nameSearch)
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
+
+        public async Task<PaginatedList<GetTransactionsVM>?> GetTransactions(int index, int pageSize)
         {
+            Guid uid;
+            ApplicationUser? user = null;
+            if (Guid.TryParse(UserId, out uid))
+            {
+                user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(uid)).FirstOrDefaultAsync();
+            }
+            var wallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(w => w.UserId == user.Id).FirstOrDefaultAsync();
             IQueryable<Transaction> query = _unitOfWork.GetRepository<Transaction>().Entities
-                .Where(s => !s.DeletedAt.HasValue);
+                .Where(s => !s.DeletedAt.HasValue && s.WalletId.Equals(wallet.Id) && s.Status.Equals(EnumStatus.Complete));
 
-            if (!string.IsNullOrWhiteSpace(id))
-            {
-                query = query.Where(lp => lp.Id.ToString().Contains(id));
-            }
-
-            if (!string.IsNullOrWhiteSpace(nameSearch))
-            {
-                // Uncomment và chỉnh sửa nếu cần lọc theo tên
-                // query = query.Where(lp => lp.Name.Contains(nameSearch));
-            }
-
-            // Sắp xếp theo thứ tự mới nhất (giảm dần theo CreatedAt)
             query = query.OrderByDescending(t => t.CreatedAt);
 
             var resultQuery = await _unitOfWork.GetRepository<Transaction>().GetPagging(query, index, pageSize);
