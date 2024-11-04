@@ -75,7 +75,8 @@ namespace SWD392.Manim.Services.Services
                     Amount = problem.Price,
                     CreatedAt = DateTime.Now,
                     WalletId = existedWallet.Id,
-                    BillingDate = DateTime.Now,  
+                    BillingDate = DateTime.Now,
+                    Status = Repositories.Enum.EnumStatus.Complete,
                 };
 
                 Solution solution = new Solution()

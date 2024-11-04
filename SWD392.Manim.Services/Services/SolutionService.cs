@@ -11,12 +11,16 @@ namespace SWD392.Manim.Services.Services
     public class SolutionService : ISolutionService
     {
         private readonly IMapper _mapper;
-        private IUnitOfWork _unitOfWork;
-        public SolutionService(IMapper mapper, IUnitOfWork unitOfWork)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _contextAccessor;
+
+        public SolutionService(IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor contextAccessor)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _contextAccessor = contextAccessor;
         }
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_contextAccessor);
         public async Task<PaginatedList<GetSolutionsVM>?> GetSolutions(int index, int pageSize, string? id, string? nameSearch)
         {
             IQueryable<Solution> query = _unitOfWork.GetRepository<Solution>().Entities.Where(s => !s.DeletedAt.HasValue);
@@ -81,6 +85,12 @@ namespace SWD392.Manim.Services.Services
             await _unitOfWork.SaveAsync();
         }
 
-
+        public async Task<GetSolutionsVM?> GetSolutionByProblemId(string problemId)
+        {
+            Guid id;
+            Guid.TryParse(UserId, out id);
+            Solution? existedSolution = await _unitOfWork.GetRepository<Solution>().Entities.Where(s => s.UserId == id && s.ProblemId == problemId && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Giải pháp không tồn tại!");
+            return _mapper.Map<GetSolutionsVM?>(existedSolution);
+        }
     }
 }

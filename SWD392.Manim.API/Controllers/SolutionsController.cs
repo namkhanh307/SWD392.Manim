@@ -20,10 +20,19 @@ namespace SWD392.Manim.API.Controllers
                 code: ResponseCodeConstants.SUCCESS,
                 data: result));
         }
-        [HttpGet("{id}")]
+        [HttpGet("id")]
         public async Task<IActionResult> GetSolutionById(string id)
         {
             var result = await _solutionService.GetSolutionById(id);
+            return Ok(new BaseResponseModel<GetSolutionsVM>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+        }
+        [HttpGet("problemId")]
+        public async Task<IActionResult> GetSolutionByProblemId(string problemId)
+        {
+            var result = await _solutionService.GetSolutionByProblemId(problemId);
             return Ok(new BaseResponseModel<GetSolutionsVM>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,

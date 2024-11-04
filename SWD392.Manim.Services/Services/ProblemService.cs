@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Implement;
 using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.ProblemParameterVM;
 using SWD392.Manim.Repositories.ViewModel.ProblemVM;
@@ -86,7 +87,18 @@ namespace SWD392.Manim.Services.Services
         {
             Problem? problem = await _unitOfWork.GetRepository<Problem>().GetByIdAsync(model.ProblemId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Vấn đề không tồn tại!");
             Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(problem.TopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại!");
+            Guid id;
+            Guid.TryParse(UserId, out id);
+            Wallet? existedWallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(u => u.UserId.Equals(id)).FirstOrDefaultAsync();
+            if(existedWallet == null)
+            {
+                throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Vi không tồn tại!");
+            }
+            if (existedWallet.Balance < problem.Price)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Số tiền của bạn không đủ để mua giải pháp cho bài này!");
 
+            }
             List<string> parameterList = new();
             foreach (var item in model.PostPPVMs)
             {
@@ -107,7 +119,7 @@ namespace SWD392.Manim.Services.Services
             var inputParameterJson = $"{UserId};{problem.Id};{problem.Name};{topic.Name};{problem.Type};{result}";
 
             RedisValue redisValue = new RedisValue(inputParameterJson);
-            await subscriber.PublishAsync(Channel, redisValue);
+            await subscriber.PublishAsync(Channel, redisValue);             
         }
         public async Task PostProblem(PostProblemVM model)
         {
