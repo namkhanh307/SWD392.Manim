@@ -50,6 +50,10 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new ErrorException(StatusCodes.Status401Unauthorized, ErrorCode.UnAuthorized, "Tên đăng nhâp hoặc hoặc mật khẩu không đúng!");
             }
+            if (user.Status == false)
+            {
+                throw new ErrorException(StatusCodes.Status406NotAcceptable, ErrorCode.UnAuthorized, "Tài khoản của bạn không hoạt động");
+            }
             ApplicationUserRoles roleUser = _unitOfWork.GetRepository<ApplicationUserRoles>().Entities.Where(x => x.UserId == user.Id).FirstOrDefault()
                                 ?? throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.BADREQUEST, "Không tìm thấy tài khoản");
             string role = _unitOfWork.GetRepository<ApplicationRole>().Entities.Where(x => x.Id == roleUser.RoleId).Select(x => x.Name).FirstOrDefault()
