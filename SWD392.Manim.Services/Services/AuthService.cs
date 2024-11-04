@@ -233,7 +233,7 @@ namespace SWD392.Manim.Services.Services
                 {
                     user.Status = true;
                     await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(user);
-                    await _unitOfWork.GetRepository<OTP>().DeleteAsync(otp);
+                    await _unitOfWork.GetRepository<OTP>().DeleteAsync(otp.Id);
                     await _unitOfWork.SaveAsync();
                     return true;
                 }
