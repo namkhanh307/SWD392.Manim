@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
-using SWD392.Manim.Repositories.ViewModel.ChapterVM;
 using SWD392.Manim.Repositories.ViewModel.UserVM;
 using SWD392.Manim.Services.Services;
 

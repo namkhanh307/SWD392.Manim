@@ -6,6 +6,7 @@ using StackExchange.Redis;
 using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories.Repository.Interface;
+using SWD392.Manim.Repositories.ViewModel.ProblemParameterVM;
 using SWD392.Manim.Repositories.ViewModel.ProblemVM;
 
 
@@ -35,7 +36,9 @@ namespace SWD392.Manim.Services.Services
 
         public async Task<PaginatedList<GetProblemsVM>?> GetProblems(int index, int pageSize, string? id, string? nameSearch)
         {
-            IQueryable<Problem> query = _unitOfWork.GetRepository<Problem>().Entities.Where(s => !s.DeletedAt.HasValue);
+            IQueryable<Problem> query = _unitOfWork.GetRepository<Problem>()
+                                                   .Entities
+                                                   .Where(s => !s.DeletedAt.HasValue);
 
             if (!string.IsNullOrWhiteSpace(id))
             {
@@ -48,18 +51,31 @@ namespace SWD392.Manim.Services.Services
             }
 
             var resultQuery = await _unitOfWork.GetRepository<Problem>().GetPagging(query, index, pageSize);
+            var responseItems = resultQuery.Items.Select(item => new GetProblemsVM
+            {
+                Id = item.Id,
+                TopicId = item.TopicId,
+                TopicName = item.Topic?.Name ?? string.Empty,
+                Name = item.Name,
+                Description = item.Description,
+                GetPPVM = item.ProblemParameters.Select(pp => new GetPPVM
+                {
+                    ParameterId = pp.ParameterId,
+                    Value = pp.Value,
+                    Symbol = pp.Parameter.Symbol
+                }).ToList()
+            }).ToList();
 
-            var responseItems = resultQuery.Items.Select(item => _mapper.Map<GetProblemsVM>(item)).ToList();
-
-            // Create paginated response
             var responsePaginatedList = new PaginatedList<GetProblemsVM>(
                 responseItems,
                 resultQuery.TotalCount,
                 resultQuery.PageNumber,
                 resultQuery.TotalPages
             );
+
             return responsePaginatedList;
         }
+
 
         public async Task<GetProblemsVM?> GetProblemById(string id)
         {
