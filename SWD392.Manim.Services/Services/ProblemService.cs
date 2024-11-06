@@ -181,6 +181,13 @@ namespace SWD392.Manim.Services.Services
                 await _unitOfWork.GetRepository<ProblemParameter>().DeleteAsync(item);
                 await _unitOfWork.SaveAsync();
             }
+            ICollection<Solution> solutions = await _unitOfWork.GetRepository<Solution>().Entities.Where(s => s.ProblemId == id).ToListAsync();
+            foreach (var solution in solutions)
+            {
+                solution.DeletedAt = DateTime.Now;
+                await _unitOfWork.GetRepository<Solution>().UpdateAsync(solution);
+                await _unitOfWork.SaveAsync();
+            }
             existedProblem.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Problem>().UpdateAsync(existedProblem);
             await _unitOfWork.SaveAsync();

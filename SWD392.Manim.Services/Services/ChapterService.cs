@@ -86,6 +86,18 @@ namespace SWD392.Manim.Services.Services
         public async Task DeleteChapter(string id)
         {
             Chapter? existedChapter = await _unitOfWork.GetRepository<Chapter>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chương không tồn tại!");
+            List<Topic> topics = await _unitOfWork.GetRepository<Topic>().Entities.Where(s => s.ChapterId == id && !s.DeletedAt.HasValue).ToListAsync();
+            foreach (Topic topic in topics)
+            {
+                topic.DeletedAt = DateTime.Now;
+                await _unitOfWork.GetRepository<Topic>().UpdateAsync(topic);
+                List<Problem> problems = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.TopicId == topic.Id && !s.DeletedAt.HasValue).ToListAsync();
+                foreach (Problem problem in problems)
+                {
+                    problem.DeletedAt = DateTime.Now;
+                    await _unitOfWork.GetRepository<Problem>().UpdateAsync(problem);
+                }
+            }
             existedChapter.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Chapter>().UpdateAsync(existedChapter);
             await _unitOfWork.SaveAsync();

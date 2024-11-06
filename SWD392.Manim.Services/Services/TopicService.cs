@@ -85,6 +85,12 @@ namespace SWD392.Manim.Services.Services
         public async Task DeleteTopic(string id)
         {
             Topic? existedTopic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại!");
+            List<Problem> problems = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.TopicId == id && !s.DeletedAt.HasValue).ToListAsync();
+            foreach (Problem problem in problems)
+            {
+                problem.DeletedAt = DateTime.Now;
+                await _unitOfWork.GetRepository<Problem>().UpdateAsync(problem);
+            }
             existedTopic.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Topic>().UpdateAsync(existedTopic);
             await _unitOfWork.SaveAsync();

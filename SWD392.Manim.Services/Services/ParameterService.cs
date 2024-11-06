@@ -110,6 +110,12 @@ namespace SWD392.Manim.Services.Services
         public async Task DeleteParameter(string id)
         {
             Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Biến không tồn tại!");
+            ICollection<ProblemParameter> pps = await _unitOfWork.GetRepository<ProblemParameter>().Entities.Where(s => s.ParameterId == id && !s.DeletedAt.HasValue).ToListAsync();
+            foreach (var item in pps)
+            {
+                await _unitOfWork.GetRepository<ProblemParameter>().DeleteAsync(item);
+                await _unitOfWork.SaveAsync();
+            }
             existedParameter.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Parameter>().UpdateAsync(existedParameter);
             await _unitOfWork.SaveAsync();

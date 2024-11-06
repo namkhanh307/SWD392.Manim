@@ -72,7 +72,7 @@ namespace SWD392.Manim.Services.Services
                 Transaction transaction = new Transaction()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Amount = problem.Price,
+                    Amount = -problem.Price,
                     CreatedAt = DateTime.Now,
                     WalletId = existedWallet.Id,
                     BillingDate = DateTime.Now,
@@ -91,7 +91,7 @@ namespace SWD392.Manim.Services.Services
                 };
                     await unitOfWork.GetRepository<Solution>().InsertAsync(solution);
                     await unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
-                    existedWallet.Balance -= transaction.Amount;
+                    existedWallet.Balance += transaction.Amount;
                     await unitOfWork.GetRepository<Wallet>().UpdateAsync(existedWallet);
                     await unitOfWork.SaveAsync();
                 }

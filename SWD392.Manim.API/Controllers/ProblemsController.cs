@@ -54,7 +54,7 @@ namespace SWD392.Manim.API.Controllers
             return Ok(new BaseResponseModel<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Xoa thành công"));
+                data: "Xóa thành công"));
         }
         [HttpPost("purchaseProblem")]
         public async Task<IActionResult> PurchaseProblem(PurchaseProblemVM model)
@@ -63,7 +63,7 @@ namespace SWD392.Manim.API.Controllers
             return Ok(new BaseResponseModel<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Mua giai phap thanh cong"));
+                data: "Mua giải pháp thành công!"));
         }
     }
 }

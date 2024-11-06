@@ -12,9 +12,9 @@ namespace SWD392.Manim.API.Controllers
         public readonly ISolutionService _solutionService = solutionService;
 
         [HttpGet]
-        public async Task<IActionResult> GetSolutions(int index = 1, int pageSize = 10, string? id = null, string? nameSearch = null)
+        public async Task<IActionResult> GetSolutions(int index = 1, int pageSize = 10, string? id = null, string? problemId = null, string? userId = null)
         {
-            var result = await _solutionService.GetSolutions(index, pageSize, id, nameSearch);
+            var result = await _solutionService.GetSolutions(index, pageSize, id, problemId, userId);
             return Ok(new BaseResponseModel<PaginatedList<GetSolutionsVM>?>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,

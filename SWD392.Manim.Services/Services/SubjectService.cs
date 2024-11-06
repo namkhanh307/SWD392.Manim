@@ -86,6 +86,24 @@ namespace SWD392.Manim.Services.Services
         public async Task DeleteSubject(string id)
         {
             Subject? existedSubject = await _unitOfWork.GetRepository<Subject>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Môn học không tồn tại!");
+            List<Chapter> chapters = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.SubjectId == id && !s.DeletedAt.HasValue).ToListAsync();
+            foreach (Chapter chapter in chapters)
+            {
+                chapter.DeletedAt = DateTime.Now;
+                await _unitOfWork.GetRepository<Chapter>().UpdateAsync(chapter);
+                List<Topic> topics = await _unitOfWork.GetRepository<Topic>().Entities.Where(s => s.ChapterId == chapter.Id && !s.DeletedAt.HasValue).ToListAsync();
+                foreach (Topic topic in topics)
+                {
+                    topic.DeletedAt = DateTime.Now;
+                    await _unitOfWork.GetRepository<Topic>().UpdateAsync(topic);
+                    List<Problem> problems = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.TopicId == topic.Id && !s.DeletedAt.HasValue).ToListAsync();
+                    foreach (Problem problem in problems)
+                    {
+                        problem.DeletedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Problem>().UpdateAsync(problem);
+                    }
+                }
+            }
             existedSubject.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Subject>().UpdateAsync(existedSubject);
             await _unitOfWork.SaveAsync();

@@ -15,5 +15,6 @@ namespace SWD392.Manim.Repositories.ViewModel.DashboardVM
         public int TotalProblems { get; set; }
         public int TotalSubjects { get; set; }
         public int TotalChapters { get; set; }
+        public decimal? TotalRevenue { get; set; }
     }
 }

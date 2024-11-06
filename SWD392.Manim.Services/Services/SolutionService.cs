@@ -21,20 +21,23 @@ namespace SWD392.Manim.Services.Services
             _contextAccessor = contextAccessor;
         }
         private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_contextAccessor);
-        public async Task<PaginatedList<GetSolutionsVM>?> GetSolutions(int index, int pageSize, string? id, string? nameSearch)
+        public async Task<PaginatedList<GetSolutionsVM>?> GetSolutions(int index, int pageSize, string? id, string? problemId, string? userId)
         {
-            IQueryable<Solution> query = _unitOfWork.GetRepository<Solution>().Entities.Where(s => !s.DeletedAt.HasValue);
+            IQueryable<Solution> query = _unitOfWork.GetRepository<Solution>().Entities.Where(s => !s.DeletedAt.HasValue).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(id))
             {
                 query = query.Where(lp => lp.Id.ToString().Contains(id));
             }
-
-            if (!string.IsNullOrWhiteSpace(nameSearch))
+            if (!string.IsNullOrWhiteSpace(problemId))
             {
-                query = query.Where(lp => lp.Name.Contains(nameSearch));
+                query = query.Where(lp => lp.ProblemId.ToString().Contains(problemId));
             }
-
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                query = query.Where(lp => lp.UserId.ToString().Contains(userId));
+            }
+            query = query.OrderByDescending(q => q.CreatedAt);
             var resultQuery = await _unitOfWork.GetRepository<Solution>().GetPagging(query, index, pageSize);
 
             var responseItems = resultQuery.Items.Select(item => _mapper.Map<GetSolutionsVM>(item)).ToList();
