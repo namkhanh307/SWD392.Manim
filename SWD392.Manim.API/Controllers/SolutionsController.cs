@@ -33,7 +33,7 @@ namespace SWD392.Manim.API.Controllers
         public async Task<IActionResult> GetSolutionByProblemId(string problemId)
         {
             var result = await _solutionService.GetSolutionByProblemId(problemId);
-            return Ok(new BaseResponseModel<GetSolutionsVM>(
+            return Ok(new BaseResponseModel<IEnumerable<GetSolutionsVM?>>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
                 data: result));

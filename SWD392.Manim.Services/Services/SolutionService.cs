@@ -85,12 +85,16 @@ namespace SWD392.Manim.Services.Services
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task<GetSolutionsVM?> GetSolutionByProblemId(string problemId)
+        public async Task<IEnumerable<GetSolutionsVM?>> GetSolutionByProblemId(string problemId)
         {
             Guid id;
             Guid.TryParse(UserId, out id);
-            Solution? existedSolution = await _unitOfWork.GetRepository<Solution>().Entities.Where(s => s.UserId == id && s.ProblemId == problemId && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Giải pháp không tồn tại!");
-            return _mapper.Map<GetSolutionsVM?>(existedSolution);
+            IEnumerable<Solution>? existedSolution = await _unitOfWork.GetRepository<Solution>().Entities.Where(s => s.UserId == id && s.ProblemId == problemId && !s.DeletedAt.HasValue).ToListAsync();
+            if (existedSolution == null)
+            {
+                throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Bạn chưa mua giải pháp nào!");
+            }
+            return _mapper.Map<IEnumerable<GetSolutionsVM?>>(existedSolution);
         }
     }
 }
