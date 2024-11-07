@@ -103,6 +103,11 @@ namespace SWD392.Manim.Services.Services
             Guid id;
             Guid.TryParse(UserId, out id);
             ApplicationUser currentUser = await _unitOfWork.GetRepository<ApplicationUser>().GetByIdAsync(id);
+            ApplicationUser? usernameUser = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.UserName == model.UserName && !u.DeletedAt.HasValue).FirstOrDefaultAsync();
+            if(usernameUser != null)
+            {
+                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Tên đăng nhập đã tồn tại!");
+            }
             _mapper.Map(model, currentUser);
             await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(currentUser);
             await _unitOfWork.SaveAsync();
@@ -119,7 +124,7 @@ namespace SWD392.Manim.Services.Services
                 throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Mật khẩu  cũ không chính xác!");
             }
             if (!model.Password.Equals(model.ConfirmPassword)) throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Mật khẩu confirm không trùng khớp!");
-            if (!model.Password.Equals(model.OldPassword)) throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Mật khẩu mới trùng với mật khẩu cũ! Vui lòng nhập lại mật khẩu mới!"); ;
+            if (model.Password.Equals(model.OldPassword)) throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Mật khẩu mới trùng với mật khẩu cũ! Vui lòng nhập lại mật khẩu mới!"); ;
             user.PasswordHash = HashPasswordService.HashPasswordThrice(model.Password);
             await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(user);
             await _unitOfWork.SaveAsync();
