@@ -7,7 +7,7 @@ using SWD392.Manim.Repositories.ViewModel.DashboardVM;
 
 namespace SWD392.Manim.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/dashboard")]
     [ApiController]
     public class DashboardsController : ControllerBase
     {

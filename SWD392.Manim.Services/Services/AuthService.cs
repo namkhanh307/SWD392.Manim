@@ -67,7 +67,7 @@ namespace SWD392.Manim.Services.Services
             };
         }
 
-        public async Task SignUp(PostSignUpVM model)
+        public async Task<string> SignUp(PostSignUpVM model)
         {
             ApplicationUser? user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.FirstOrDefaultAsync(p => p.UserName == model.Username);
             if (user != null)
@@ -124,6 +124,7 @@ namespace SWD392.Manim.Services.Services
             await _unitOfWork.GetRepository<ApplicationUser>().InsertAsync(newUser);
             await _unitOfWork.GetRepository<Wallet>().InsertAsync(wallet);
             await _unitOfWork.SaveAsync();
+            return newUser.Id.ToString();
         }
 
         private async Task SendOtpEmail(string email, string otp)

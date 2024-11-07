@@ -6,7 +6,7 @@ using SWD392.Manim.Repositories.ViewModel.TransactionVM;
 
 namespace SWD392.Manim.API.Controllers
 {
-    [Route("api/transaction")]
+    [Route("api/transactions")]
     [ApiController]
 
 

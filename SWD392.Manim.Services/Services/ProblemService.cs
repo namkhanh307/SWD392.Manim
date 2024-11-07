@@ -128,7 +128,12 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên vấn đề đã tồn tại!");
             }
-            Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(model.TopicId); 
+            Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(model.TopicId) ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Chủ đề đã tồn tại!");
+            Problem? existedType = await _unitOfWork.GetRepository<Problem>().Entities.Where(u => u.Type == model.Type && !u.DeletedAt.HasValue).FirstOrDefaultAsync();
+            if (existedType != null)
+            {
+                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Loại của vấn đề đã tồn tại!");
+            }
             Problem problem = _mapper.Map<Problem>(model);
             foreach (var item in model.PostPPVMs)
             {

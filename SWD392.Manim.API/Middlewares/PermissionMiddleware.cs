@@ -29,7 +29,7 @@ namespace SWD392.Manim.API.Middlewares
             _rolePermissions = new Dictionary<string, List<string>>()
             {
                 //author bang role, roleClaim userClaim
-                { "User", new List<string> { "/api/subjects", "/api/wallet/", "/api/auth/UpdateProfile", "/api/problems", "/api/solutions", "/api/chapters", "/api/topics", "/api/transaction", "/api/parameter", "/api/auth" } },
+                { "User", new List<string> { "/api/subjects", "/api/wallet/", "/api/auth/UpdateProfile", "/api/problems", "/api/solutions", "/api/chapters", "/api/topics", "/api/transactions", "/api/parameters", "/api/auth" } },
             };
 
         }

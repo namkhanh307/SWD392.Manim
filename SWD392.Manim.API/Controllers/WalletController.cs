@@ -6,13 +6,13 @@ using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Controllers
 {
-    [Route("api/wallet")]
+    [Route("api/wallets")]
     [ApiController]
     public class WalletController(IPayService payService) : ControllerBase
     {
         private readonly IPayService _payService = payService;
 
-        [HttpGet("/getWallet")]
+        [HttpGet]
         public async Task<IActionResult> GetWallet()
         {
             var result = await _payService.GetWallet();

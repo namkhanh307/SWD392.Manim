@@ -38,32 +38,32 @@ namespace SWD392.Manim.API.Controllers
                 code: ResponseCodeConstants.SUCCESS,
                 data: result));
         }
-        [HttpPost]
-        public async Task<IActionResult> PostSolution(PostSolutionVM model)
-        {
-            await _solutionService.PostSolution(model);
-            return Ok(new BaseResponseModel<string>(
-                statusCode: StatusCodes.Status200OK,
-                code: ResponseCodeConstants.SUCCESS,
-                data: "Thêm thành công"));
-        }
-        [HttpPut]
-        public async Task<IActionResult> PutSolution(string id, PostSolutionVM model)
-        {
-            await _solutionService.PutSolution(id, model);
-            return Ok(new BaseResponseModel<string>(
-                statusCode: StatusCodes.Status200OK,
-                code: ResponseCodeConstants.SUCCESS,
-                data: "Chỉnh sửa thành công"));
-        }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSolution(string id)
-        {
-            await _solutionService.DeleteSolution(id);
-            return Ok(new BaseResponseModel<string>(
-                statusCode: StatusCodes.Status200OK,
-                code: ResponseCodeConstants.SUCCESS,
-                data: "Xoa thành công"));
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> PostSolution(PostSolutionVM model)
+        //{
+        //    await _solutionService.PostSolution(model);
+        //    return Ok(new BaseResponseModel<string>(
+        //        statusCode: StatusCodes.Status200OK,
+        //        code: ResponseCodeConstants.SUCCESS,
+        //        data: "Thêm thành công"));
+        //}
+        //[HttpPut]
+        //public async Task<IActionResult> PutSolution(string id, PostSolutionVM model)
+        //{
+        //    await _solutionService.PutSolution(id, model);
+        //    return Ok(new BaseResponseModel<string>(
+        //        statusCode: StatusCodes.Status200OK,
+        //        code: ResponseCodeConstants.SUCCESS,
+        //        data: "Chỉnh sửa thành công"));
+        //}
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteSolution(string id)
+        //{
+        //    await _solutionService.DeleteSolution(id);
+        //    return Ok(new BaseResponseModel<string>(
+        //        statusCode: StatusCodes.Status200OK,
+        //        code: ResponseCodeConstants.SUCCESS,
+        //        data: "Xoa thành công"));
+        //}
     }
 }

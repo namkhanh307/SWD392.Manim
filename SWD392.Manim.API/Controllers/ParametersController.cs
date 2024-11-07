@@ -5,7 +5,7 @@ using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Controllers
 {
-    [Route("api/parameter")]
+    [Route("api/parameters")]
     [ApiController]
     public class ParametersController(IParameterService parameterService) : ControllerBase
     {

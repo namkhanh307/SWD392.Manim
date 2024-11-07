@@ -7,7 +7,7 @@ namespace SWD392.Manim.Services.Services
     public interface IAuthService
     {
         Task<GetSignInVM> SignIn(PostSignInVM model);
-        Task SignUp(PostSignUpVM model);
+        Task<string> SignUp(PostSignUpVM model);
         GetTokenVM GenerateTokens(ApplicationUser user, string role);
         Task<bool> VerifyOtp(string UserId, string otpCheck);
     }

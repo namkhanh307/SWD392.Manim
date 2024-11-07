@@ -20,11 +20,11 @@ namespace SWD392.Manim.API.Controllers
         [HttpPost("SignUp")]
         public async Task<IActionResult> SignUp(PostSignUpVM model)
         {
-            await _authService.SignUp(model);
+            string result = await _authService.SignUp(model);
             return Ok(new BaseResponseModel<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Đăng ký thành công"));
+                data: result));
         }
         [HttpPost("SignIn")]
         public async Task<IActionResult> SignIn(PostSignInVM model)
