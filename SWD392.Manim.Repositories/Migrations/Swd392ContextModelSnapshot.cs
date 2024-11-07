@@ -463,6 +463,9 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
                     b.Property<string>("TopicId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");

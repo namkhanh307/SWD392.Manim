@@ -208,7 +208,7 @@ namespace SWD392.Manim.Services.Services
             Wallet? wallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(r => r.UserId == id).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Ví không tồn tại");
             return new GetWalletVM()
             {
-                Balance = wallet.Balance,
+                Balance = wallet.Balance < 0 ? 0 : wallet.Balance,
                 FullName = wallet.User != null ? wallet.User.FullName! : "Người dùng ẩn danh"
             };
 

@@ -41,7 +41,7 @@ namespace SWD392.Manim.API.Controllers
         {
             var props = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("SignInGoogle", "Auth")  // Generates the absolute path for redirect
+                RedirectUri = $"api/auth/google-auth/signin-google"
             };
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }
@@ -84,23 +84,23 @@ namespace SWD392.Manim.API.Controllers
 
                 // HTML response with postMessage to return token and close the window
                 var htmlContent = $@"
-<html>
-<body>
-    <script type='text/javascript'>
-        window.opener.postMessage({{
-            data: {{
-                token: {{
-                    accessToken: '{accessToken}',
-                    refreshToken: '{refreshToken}'
-                }},
-                email: '{email}',
-                name: '{name}'
-            }}
-        }}, '{Request.Scheme}://{Request.Host}');
-
-    </script>
-</body>
-</html>";
+                    <html>
+                    <body>
+                        <script type='text/javascript'>
+                            window.opener.postMessage({{
+                                data: {{
+                                    token: {{
+                                        accessToken: '{accessToken}',
+                                        refreshToken: '{refreshToken}'
+                                    }},
+                                    email: '{email}',
+                                    name: '{name}'
+                                }}
+                            }}, '{Request.Scheme}://{Request.Host}');
+                            window.close();
+                        </script>
+                    </body>
+                    </html>";
 
                 return Content(htmlContent, "text/html");
             }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SWD392.Manim.Repositories.ViewModel.ProblemVM;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,5 +17,6 @@ namespace SWD392.Manim.Repositories.ViewModel.DashboardVM
         public int TotalSubjects { get; set; }
         public int TotalChapters { get; set; }
         public decimal? TotalRevenue { get; set; }
+        public List<GetProblemsVM>? WaitingProblems { get; set; }
     }
 }

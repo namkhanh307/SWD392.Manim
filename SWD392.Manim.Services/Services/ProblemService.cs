@@ -86,18 +86,18 @@ namespace SWD392.Manim.Services.Services
         public async Task PurchaseProblem(PurchaseProblemVM model)
         {
             Problem? problem = await _unitOfWork.GetRepository<Problem>().GetByIdAsync(model.ProblemId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Vấn đề không tồn tại!");
+            if(problem.Status == false)
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Vấn đề chưa được xử lí! Vui lòng thử lại sau!");
+            }
             Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(problem.TopicId) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại!");
             Guid id;
             Guid.TryParse(UserId, out id);
-            Wallet? existedWallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(u => u.UserId.Equals(id)).FirstOrDefaultAsync();
-            if(existedWallet == null)
-            {
+            Wallet? existedWallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(u => u.UserId.Equals(id)).FirstOrDefaultAsync() ??
                 throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Vi không tồn tại!");
-            }
             if (existedWallet.Balance < problem.Price)
             {
                 throw new ErrorException(StatusCodes.Status400BadRequest, ErrorCode.BadRequest, "Số tiền của bạn không đủ để mua giải pháp cho bài này!");
-
             }
             List<string> parameterList = new();
             foreach (var item in model.PostPPVMs)
@@ -133,6 +133,10 @@ namespace SWD392.Manim.Services.Services
             if (existedType != null)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Loại của vấn đề đã tồn tại!");
+            }
+            if(model.Price < 0)
+            {
+                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Vui lòng nhập giá lớn hơn 0!");
             }
             Problem problem = _mapper.Map<Problem>(model);
             foreach (var item in model.PostPPVMs)

@@ -7,6 +7,8 @@ namespace SWD392.Manim.Repositories.ViewModel.ProblemVM
         public string Id { get; set; } = string.Empty;
         public string TopicId { get; set; } = string.Empty;
         public string TopicName { get; set; } = string.Empty;
+        public int Type { get; set; }
+        public bool Status { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public ICollection<GetPPVM> GetPPVM { get; set; } = new List<GetPPVM>();
