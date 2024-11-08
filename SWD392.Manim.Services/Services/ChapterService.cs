@@ -103,6 +103,12 @@ namespace SWD392.Manim.Services.Services
                 {
                     problem.DeletedAt = DateTime.Now;
                     await _unitOfWork.GetRepository<Problem>().UpdateAsync(problem);
+                    List<ProblemParameter> parameters = await _unitOfWork.GetRepository<ProblemParameter>().Entities.Where(s => s.ProblemId == problem.Id && !s.DeletedAt.HasValue).ToListAsync();
+                    foreach (ProblemParameter parameter in parameters)
+                    {
+                        parameter.DeletedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Problem>().DeleteAsync(parameter);
+                    }
                 }
             }
             existedChapter.DeletedAt = DateTime.Now;
