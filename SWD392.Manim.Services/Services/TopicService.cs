@@ -101,6 +101,7 @@ namespace SWD392.Manim.Services.Services
                 List<ProblemParameter> pp = await _unitOfWork.GetRepository<ProblemParameter>().Entities.Where(s => s.ProblemId == problem.Id && !s.DeletedAt.HasValue).ToListAsync();
                 foreach (ProblemParameter item in pp)
                 {
+                    item.DeletedAt = DateTime.Now;
                     await _unitOfWork.GetRepository<Problem>().DeleteAsync(item);
                 }
             }
