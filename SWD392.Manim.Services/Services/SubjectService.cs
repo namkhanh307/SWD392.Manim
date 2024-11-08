@@ -85,7 +85,16 @@ namespace SWD392.Manim.Services.Services
         public async Task PutSubject(string id, PostSubjectVM model)
         {
             Subject? existedSubject = await _unitOfWork.GetRepository<Subject>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Môn học không tồn tại!");
+            if (existedSubject.Name != model.Name)
+            {
+                Subject? subjectWithSameName = await _unitOfWork.GetRepository<Subject>().Entities.Where(s => s.Name == model.Name).FirstOrDefaultAsync();
 
+
+                if (subjectWithSameName != null)
+                {
+                    throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên môn học đã tồn tại!");
+                }
+            }
             _mapper.Map(model, existedSubject);
             existedSubject.UpdatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Subject>().UpdateAsync(existedSubject);
