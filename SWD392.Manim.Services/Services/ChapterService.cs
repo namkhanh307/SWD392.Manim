@@ -77,14 +77,14 @@ namespace SWD392.Manim.Services.Services
         public async Task PutChapter(string id, PostChapterVM model)
         {
             Chapter? existedChapter = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Chương không tồn tại!");
-            //if (existedChapter.Name != model.Name)
-            //{
-            //    Chapter? existedChapterName = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.Name == model.Name && s.SubjectId == model.SubjectId).FirstOrDefaultAsync();
-            //    if (existedChapterName != null)
-            //    {
-            //        throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên chương đã tồn tại!");
-            //    }
-            //}
+            if (existedChapter.Name != model.Name)
+            {
+                Chapter? existedChapterName = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.Name == model.Name && s.SubjectId == model.SubjectId).FirstOrDefaultAsync();
+                if (existedChapterName != null)
+                {
+                    throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên chương đã tồn tại!");
+                }
+            }
             _mapper.Map(model, existedChapter);
             existedChapter.UpdatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Chapter>().UpdateAsync(existedChapter);
