@@ -25,11 +25,23 @@ namespace SWD392.Manim.API.Middlewares
                 "/api/auth/google-auth/signin-google",
                 "/api/wallet/ReturnUrl",
                 "/api/auth/Verify",
+                "/api/subjects",
+                "/api/wallets",
+                "/api/transactions",
+                "/api/auth/UpdateProfile",
+                "/api/problems",
+                "/api/solutions",
+                "/api/chapters",
+                "/api/topics",
+                "/api/parameters",
+                "/api/auth",
+                "/api/dashboard"
             ];
             _rolePermissions = new Dictionary<string, List<string>>()
             {
                 //author bang role, roleClaim userClaim
-                { "User", new List<string> { "/api/subjects", "/api/wallet/", "/api/auth/UpdateProfile", "/api/problems", "/api/solutions", "/api/chapters", "/api/topics", "/api/transactions", "/api/parameters", "/api/auth" } },
+                { "User", new List<string> { "/api/subjects", "/api/wallets", "/api/auth/UpdateProfile", "/api/problems", "/api/solutions", "/api/chapters", "/api/topics", "/api/transactions", "/api/parameters", "/api/auth" } },
+                { "Admin", new List <string> { "api/dashboard" } }
             };
 
         }
