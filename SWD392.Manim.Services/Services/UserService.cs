@@ -103,10 +103,13 @@ namespace SWD392.Manim.Services.Services
             Guid id;
             Guid.TryParse(UserId, out id);
             ApplicationUser currentUser = await _unitOfWork.GetRepository<ApplicationUser>().GetByIdAsync(id);
-            ApplicationUser? usernameUser = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.UserName == model.UserName && !u.DeletedAt.HasValue).FirstOrDefaultAsync();
-            if(usernameUser != null)
+            if(currentUser.UserName != model.UserName)
             {
-                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Tên đăng nhập đã tồn tại!");
+                ApplicationUser? usernameUser = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.UserName == model.UserName && !u.DeletedAt.HasValue).FirstOrDefaultAsync();
+                if (usernameUser != null)
+                {
+                    throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Tên đăng nhập đã tồn tại!");
+                }
             }
             _mapper.Map(model, currentUser);
             await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(currentUser);
@@ -133,8 +136,7 @@ namespace SWD392.Manim.Services.Services
         public async Task<GetUserVM> GetUserById(Guid id)
         {
             ApplicationUser? user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.FirstOrDefaultAsync(p => p.Id == id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.BADREQUEST, "Không tìm thấy người dùng"); ;
-            return _mapper.Map<GetUserVM>(user);
-
+             return _mapper.Map<GetUserVM>(user);
         }
     }
 }
