@@ -6,7 +6,7 @@ namespace SWD392.Manim.Repositories.ViewModel.SubjectVM
     {
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
+        public string Image { get; set; } = string.Empty;
         public bool Status { get; set; } = true;
         public IEnumerable<GetChapterNamesVM>? Chapters { get; set; }
 
