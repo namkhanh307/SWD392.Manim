@@ -59,6 +59,8 @@ namespace SWD392.Manim.Services.Services
                 TopicName = item.Topic?.Name ?? string.Empty,
                 Name = item.Name,
                 Description = item.Description,
+                Status = item.Status,
+                Type = item.Type,
                 GetPPVM = item.ProblemParameters.Select(pp => new GetPPVM
                 {
                     ParameterId = pp.ParameterId,
@@ -123,22 +125,19 @@ namespace SWD392.Manim.Services.Services
         }
         public async Task PostProblem(PostProblemVM model)
         {
-            Problem? existedProblem = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.Name == model.Name).FirstOrDefaultAsync();
+            Problem? existedProblem = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.Name == model.Name && !s.DeletedAt.HasValue).FirstOrDefaultAsync();
             if (existedProblem != null)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên vấn đề đã tồn tại!");
             }
             Topic? topic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(model.TopicId) ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Chủ đề đã tồn tại!");
-            Problem? existedType = await _unitOfWork.GetRepository<Problem>().Entities.Where(u => u.Type == model.Type && !u.DeletedAt.HasValue).FirstOrDefaultAsync();
-            if (existedType != null)
-            {
-                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Loại của vấn đề đã tồn tại!");
-            }
             if(model.Price < 0)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.BADREQUEST, "Vui lòng nhập giá lớn hơn 0!");
             }
+            int maxType = _unitOfWork.GetRepository<Problem>().Entities.Where(s => !s.DeletedAt.HasValue).Max(s => s.Type);
             Problem problem = _mapper.Map<Problem>(model);
+            problem.Type = maxType + 1;
             foreach (var item in model.PostPPVMs)
             {
                 ProblemParameter pp = new()

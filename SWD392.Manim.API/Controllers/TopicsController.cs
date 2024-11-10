@@ -54,7 +54,7 @@ namespace SWD392.Manim.API.Controllers
             return Ok(new BaseResponseModel<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Xoa thành công"));
+                data: "Xóa thành công"));
         }
     }
 }
