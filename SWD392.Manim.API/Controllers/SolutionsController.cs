@@ -1,5 +1,5 @@
-﻿using SWD392.Manim.Repositories;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.ViewModel.SolutionVM;
 using SWD392.Manim.Services.Services;
 
@@ -12,15 +12,15 @@ namespace SWD392.Manim.API.Controllers
         public readonly ISolutionService _solutionService = solutionService;
 
         [HttpGet]
-        public async Task<IActionResult> GetSolutions(int index = 1, int pageSize = 10, string? id = null, string? nameSearch = null)
+        public async Task<IActionResult> GetSolutions(int index = 1, int pageSize = 10, string? id = null, string? problemId = null, string? userId = null)
         {
-            var result = await _solutionService.GetSolutions(index, pageSize, id, nameSearch);
+            var result = await _solutionService.GetSolutions(index, pageSize, id, problemId, userId);
             return Ok(new BaseResponseModel<PaginatedList<GetSolutionsVM>?>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
                 data: result));
         }
-        [HttpGet("{id}")]
+        [HttpGet("id")]
         public async Task<IActionResult> GetSolutionById(string id)
         {
             var result = await _solutionService.GetSolutionById(id);
@@ -29,32 +29,41 @@ namespace SWD392.Manim.API.Controllers
                 code: ResponseCodeConstants.SUCCESS,
                 data: result));
         }
-        [HttpPost]
-        public async Task<IActionResult> PostSolution(PostSolutionVM model)
+        [HttpGet("problemId")]
+        public async Task<IActionResult> GetSolutionByProblemId(string problemId)
         {
-            await _solutionService.PostSolution(model);
-            return Ok(new BaseResponseModel<string>(
+            var result = await _solutionService.GetSolutionByProblemId(problemId);
+            return Ok(new BaseResponseModel<IEnumerable<GetSolutionsVM?>>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Thêm thành công"));
+                data: result));
         }
-        [HttpPut]
-        public async Task<IActionResult> PutSolution(string id, PostSolutionVM model)
-        {
-            await _solutionService.PutSolution(id, model);
-            return Ok(new BaseResponseModel<string>(
-                statusCode: StatusCodes.Status200OK,
-                code: ResponseCodeConstants.SUCCESS,
-                data: "Chỉnh sửa thành công"));
-        }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSolution(string id)
-        {
-            await _solutionService.DeleteSolution(id);
-            return Ok(new BaseResponseModel<string>(
-                statusCode: StatusCodes.Status200OK,
-                code: ResponseCodeConstants.SUCCESS,
-                data: "Xoa thành công"));
-        }
+        //[HttpPost]
+        //public async Task<IActionResult> PostSolution(PostSolutionVM model)
+        //{
+        //    await _solutionService.PostSolution(model);
+        //    return Ok(new BaseResponseModel<string>(
+        //        statusCode: StatusCodes.Status200OK,
+        //        code: ResponseCodeConstants.SUCCESS,
+        //        data: "Thêm thành công"));
+        //}
+        //[HttpPut]
+        //public async Task<IActionResult> PutSolution(string id, PostSolutionVM model)
+        //{
+        //    await _solutionService.PutSolution(id, model);
+        //    return Ok(new BaseResponseModel<string>(
+        //        statusCode: StatusCodes.Status200OK,
+        //        code: ResponseCodeConstants.SUCCESS,
+        //        data: "Chỉnh sửa thành công"));
+        //}
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteSolution(string id)
+        //{
+        //    await _solutionService.DeleteSolution(id);
+        //    return Ok(new BaseResponseModel<string>(
+        //        statusCode: StatusCodes.Status200OK,
+        //        code: ResponseCodeConstants.SUCCESS,
+        //        data: "Xoa thành công"));
+        //}
     }
 }

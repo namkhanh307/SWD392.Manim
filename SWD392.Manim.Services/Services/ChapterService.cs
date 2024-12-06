@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.ChapterVM;
 using SWD392.Manim.Repositories.ViewModel.TopicVM;
-using SWD392.Manim.Services.Services;
-using SWD392.Manim.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace SWD392.Manim.Services.Services
@@ -63,7 +62,7 @@ namespace SWD392.Manim.Services.Services
 
         public async Task PostChapter(PostChapterVM model)
         {
-            Chapter? existedChapter = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.Name == model.Name).FirstOrDefaultAsync();
+            Chapter? existedChapter = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.Name == model.Name && s.SubjectId == model.SubjectId).FirstOrDefaultAsync();
             if (existedChapter != null)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên chương đã tồn tại!");
@@ -78,7 +77,14 @@ namespace SWD392.Manim.Services.Services
         public async Task PutChapter(string id, PostChapterVM model)
         {
             Chapter? existedChapter = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Chương không tồn tại!");
-
+            if (existedChapter.Name != model.Name)
+            {
+                Chapter? existedChapterName = await _unitOfWork.GetRepository<Chapter>().Entities.Where(s => s.Name == model.Name && s.SubjectId == model.SubjectId).FirstOrDefaultAsync();
+                if (existedChapterName != null)
+                {
+                    throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên chương đã tồn tại!");
+                }
+            }
             _mapper.Map(model, existedChapter);
             existedChapter.UpdatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Chapter>().UpdateAsync(existedChapter);
@@ -87,6 +93,24 @@ namespace SWD392.Manim.Services.Services
         public async Task DeleteChapter(string id)
         {
             Chapter? existedChapter = await _unitOfWork.GetRepository<Chapter>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chương không tồn tại!");
+            List<Topic> topics = await _unitOfWork.GetRepository<Topic>().Entities.Where(s => s.ChapterId == id && !s.DeletedAt.HasValue).ToListAsync();
+            foreach (Topic topic in topics)
+            {
+                topic.DeletedAt = DateTime.Now;
+                await _unitOfWork.GetRepository<Topic>().UpdateAsync(topic);
+                List<Problem> problems = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.TopicId == topic.Id && !s.DeletedAt.HasValue).ToListAsync();
+                foreach (Problem problem in problems)
+                {
+                    problem.DeletedAt = DateTime.Now;
+                    await _unitOfWork.GetRepository<Problem>().UpdateAsync(problem);
+                    List<ProblemParameter> parameters = await _unitOfWork.GetRepository<ProblemParameter>().Entities.Where(s => s.ProblemId == problem.Id && !s.DeletedAt.HasValue).ToListAsync();
+                    foreach (ProblemParameter parameter in parameters)
+                    {
+                        parameter.DeletedAt = DateTime.Now;
+                        await _unitOfWork.GetRepository<Problem>().DeleteAsync(parameter);
+                    }
+                }
+            }
             existedChapter.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Chapter>().UpdateAsync(existedChapter);
             await _unitOfWork.SaveAsync();

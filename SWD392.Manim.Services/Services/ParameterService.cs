@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
-using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.ViewModel.ParameterVM;
-using SWD392.Manim.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
+using SWD392.Manim.Repositories.ViewModel.ParameterVM;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -30,7 +30,9 @@ namespace SWD392.Manim.Services.Services
             Channel = new RedisChannel(configuration.GetSection("Redis").GetSection("Channel1").Value, RedisChannel.PatternMode.Literal);
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<PaginatedList<GetParametersVM>?> GetParameters(int index, int pageSize, string? id, string? nameSearch)
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
+
+        public async Task<PaginatedList<GetParametersVM>?> GetParameters(int index, int pageSize, string? id, string? nameSearch, string? topicId)
         {
             IQueryable<Parameter> query = _unitOfWork.GetRepository<Parameter>().Entities.Where(s => !s.DeletedAt.HasValue);
 
@@ -42,6 +44,10 @@ namespace SWD392.Manim.Services.Services
             if (!string.IsNullOrWhiteSpace(nameSearch))
             {
                 query = query.Where(lp => lp.Name.Contains(nameSearch));
+            }
+            if (!string.IsNullOrWhiteSpace(topicId))
+            {
+                query = query.Where(lp => lp.TopicId == topicId);
             }
 
             var resultQuery = await _unitOfWork.GetRepository<Parameter>().GetPagging(query, index, pageSize);
@@ -62,38 +68,26 @@ namespace SWD392.Manim.Services.Services
             Parameter? existedParam = await _unitOfWork.GetRepository<Parameter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Biến không tồn tại!");
             return _mapper.Map<GetParametersVM?>(existedParam);
         }
-        public async Task PostParameter(PostParameterVM model, string problemTypeId)
+        public async Task PostParameter(PostParameterVM model)
         {
-            string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
             Guid id;
-            ApplicationUser? user = null;
-            if (Guid.TryParse(userId, out id))
+            if (Guid.TryParse(UserId, out id))
             {
-                user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
+                ApplicationUser? user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tài khoản không tồn tại!");
             }
-
-            if (user == null)
-            {
-                throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Tài khoản không tồn tại!");
-            }
-            var problemType = await _unitOfWork.GetRepository<Problem>().Entities.Where(p => p.Id == problemTypeId).FirstOrDefaultAsync();
-            if (problemType == null)
-            {
-                throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Problem Type không tồn tại");
-            }
-            Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name).FirstOrDefaultAsync();
+            Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name && p.TopicId == model.TopicId).FirstOrDefaultAsync();
             if (existedParameter != null)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên biến đã tồn tại");
             }
-
+            Topic? topic = await _unitOfWork.GetRepository<Topic>().Entities.Where(p => !p.DeletedAt.HasValue && p.Id == model.TopicId).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại");
             Parameter parameter = _mapper.Map<Parameter>(model);
-            parameter.ProblemId = problemTypeId;
+            //.ProblemId = problemTypeId;
             var subscriber = Connection.GetSubscriber();
-            var inputParameterJson = $"{problemTypeId.ToString()};{parameter.Unit}";
+            //var inputParameterJson = $"{problemTypeId.ToString()};{parameter.Unit}";
 
-            RedisValue redisValue = new RedisValue(inputParameterJson);
-            await subscriber.PublishAsync(Channel, redisValue);
+            //RedisValue redisValue = new RedisValue(inputParameterJson);
+            //await subscriber.PublishAsync(Channel, redisValue);
 
             await _unitOfWork.GetRepository<Parameter>().InsertAsync(parameter);
             await _unitOfWork.SaveAsync();
@@ -102,11 +96,12 @@ namespace SWD392.Manim.Services.Services
         public async Task PutParameter(string id, PostParameterVM model)
         {
             Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Biến không tồn tại!");
-            Parameter? existedParameterName = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name).FirstOrDefaultAsync();
+            Parameter? existedParameterName = await _unitOfWork.GetRepository<Parameter>().Entities.Where(p => !p.DeletedAt.HasValue && p.Name == model.Name && p.TopicId == model.TopicId).FirstOrDefaultAsync();
             if (existedParameterName != null)
             {
                 throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên biến đã tồn tại");
             }
+            Topic? topic = await _unitOfWork.GetRepository<Topic>().Entities.Where(p => !p.DeletedAt.HasValue && p.Id == model.TopicId).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại"); ;
             _mapper.Map(model, existedParameter);
             existedParameter.UpdatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Parameter>().UpdateAsync(existedParameter);
@@ -115,11 +110,15 @@ namespace SWD392.Manim.Services.Services
         public async Task DeleteParameter(string id)
         {
             Parameter? existedParameter = await _unitOfWork.GetRepository<Parameter>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Biến không tồn tại!");
+            ICollection<ProblemParameter> pps = await _unitOfWork.GetRepository<ProblemParameter>().Entities.Where(s => s.ParameterId == id && !s.DeletedAt.HasValue).ToListAsync();
+            foreach (var item in pps)
+            {
+                await _unitOfWork.GetRepository<ProblemParameter>().DeleteAsync(item);
+                await _unitOfWork.SaveAsync();
+            }
             existedParameter.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Parameter>().UpdateAsync(existedParameter);
             await _unitOfWork.SaveAsync();
         }
-
-
     }
 }

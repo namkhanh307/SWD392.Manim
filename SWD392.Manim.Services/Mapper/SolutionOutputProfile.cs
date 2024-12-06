@@ -8,8 +8,8 @@ namespace SWD392.Manim.Services.Mapper
     {
         public SolutionOutputProfile()
         {
-            CreateMap<SolutionOutput, GetSolutionOutputsVM>().ReverseMap();
-            CreateMap<SolutionOutput, PostSolutionOutputVM>().ReverseMap();
+            //CreateMap<SolutionOutput, GetSolutionOutputsVM>().ReverseMap();
+            //CreateMap<SolutionOutput, PostSolutionOutputVM>().ReverseMap();
         }
     }
 }

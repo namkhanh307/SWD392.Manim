@@ -1,6 +1,6 @@
 ﻿using SWD392.Manim.Repositories;
-using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
 using System.Net;
 using System.Text.Json;
 
@@ -21,19 +21,15 @@ namespace SWD392.Manim.API.Middlewares
             [
                 "/api/auth/SignIn",
                 "/api/auth/SignUp",
-                "/api/wallet/create",
                 "/api/auth/google-auth/login",
                 "/api/auth/google-auth/signin-google",
-                "/api/parameter",
-                "/api/problems",
-                "/api/topics",
-                "/api/chapters",
-                "/api/subjects",
+                "/api/wallet/ReturnUrl",
+                "/api/auth/Verify",
             ];
             _rolePermissions = new Dictionary<string, List<string>>()
             {
                 //author bang role, roleClaim userClaim
-                { "User", new List<string> { "/api/subjects", "/api/wallet/"} }
+                { "User", new List<string> { "/api/subjects", "/api/wallet/", "/api/auth/UpdateProfile", "/api/problems", "/api/solutions", "/api/chapters", "/api/topics", "/api/transactions", "/api/parameters", "/api/auth" } },
             };
 
         }

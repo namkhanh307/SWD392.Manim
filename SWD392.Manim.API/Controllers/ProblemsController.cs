@@ -1,5 +1,5 @@
-﻿using SWD392.Manim.Repositories;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.ViewModel.ProblemVM;
 using SWD392.Manim.Services.Services;
 
@@ -54,7 +54,16 @@ namespace SWD392.Manim.API.Controllers
             return Ok(new BaseResponseModel<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
-                data: "Xoa thành công"));
+                data: "Xóa thành công"));
+        }
+        [HttpPost("purchaseProblem")]
+        public async Task<IActionResult> PurchaseProblem(PurchaseProblemVM model)
+        {
+            await _problemService.PurchaseProblem(model);
+            return Ok(new BaseResponseModel<string>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: "Mua giải pháp thành công!"));
         }
     }
 }

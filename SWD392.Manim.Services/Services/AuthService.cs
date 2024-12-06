@@ -1,21 +1,22 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using MimeKit.Utils;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Infrastructure;
+using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.AuthVM;
 using SWD392.Manim.Repositories.ViewModel.UserVM;
 using System.Data;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
-using SWD392.Manim.Repositories;
-using SWD392.Manim.Repositories.Infrastructure;
-using MimeKit;
+using static System.Net.WebRequestMethods;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -49,6 +50,10 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new ErrorException(StatusCodes.Status401Unauthorized, ErrorCode.UnAuthorized, "Tên đăng nhâp hoặc hoặc mật khẩu không đúng!");
             }
+            if (user.Status == false)
+            {
+                throw new ErrorException(StatusCodes.Status406NotAcceptable, ErrorCode.UnAuthorized, "Tài khoản của bạn không hoạt động");
+            }
             ApplicationUserRoles roleUser = _unitOfWork.GetRepository<ApplicationUserRoles>().Entities.Where(x => x.UserId == user.Id).FirstOrDefault()
                                 ?? throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.BADREQUEST, "Không tìm thấy tài khoản");
             string role = _unitOfWork.GetRepository<ApplicationRole>().Entities.Where(x => x.Id == roleUser.RoleId).Select(x => x.Name).FirstOrDefault()
@@ -57,11 +62,12 @@ namespace SWD392.Manim.Services.Services
             return new GetSignInVM()
             {
                 User = _mapper.Map<GetUserVM>(user),
-                Token = token
+                Token = token,
+                Role = role,
             };
         }
 
-        public async Task SignUp(PostSignUpVM model)
+        public async Task<string> SignUp(PostSignUpVM model)
         {
             ApplicationUser? user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.FirstOrDefaultAsync(p => p.UserName == model.Username);
             if (user != null)
@@ -81,7 +87,8 @@ namespace SWD392.Manim.Services.Services
                 Email = model.Email,
                 Gender = model.Gender,
                 FullName = model.FullName,
-                CreateAt = DateTime.Now
+                CreateAt = DateTime.Now,
+                Status = false
             };
 
             ApplicationRole roleUser = _unitOfWork.GetRepository<ApplicationRole>().Entities.Where(x => x.Name == "User").FirstOrDefault()
@@ -111,11 +118,13 @@ namespace SWD392.Manim.Services.Services
                 IsValid = true
             };
             await SendOtpEmail(newUser.Email, otp);
+            ScheduleOtpCancellation(otpRecord.Id, TimeSpan.FromMinutes(10));
             await _unitOfWork.GetRepository<OTP>().InsertAsync(otpRecord);
             await _unitOfWork.GetRepository<ApplicationUserRoles>().InsertAsync(userRoles);
             await _unitOfWork.GetRepository<ApplicationUser>().InsertAsync(newUser);
             await _unitOfWork.GetRepository<Wallet>().InsertAsync(wallet);
             await _unitOfWork.SaveAsync();
+            return newUser.Id.ToString();
         }
 
         private async Task SendOtpEmail(string email, string otp)
@@ -212,6 +221,44 @@ namespace SWD392.Manim.Services.Services
             };
         }
 
+        public async Task<bool> VerifyOtp(string UserId, string otpCheck)
+        {
+            var otp = await _unitOfWork.GetRepository<OTP>()
+                                        .Entities
+                                        .Where(o => o.Code == otpCheck && o.UserId == UserId && o.IsValid && DateTime.Now < o.ExpiredAt)
+                                        .SingleOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "OTP không tồn tại hoặc hết hạn!");
 
+            if (Guid.TryParse(UserId, out Guid userId))
+            {
+                var user = await _unitOfWork.GetRepository<ApplicationUser>()
+                    .Entities
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    user.Status = true;
+                    await _unitOfWork.GetRepository<ApplicationUser>().UpdateAsync(user);
+                    await _unitOfWork.GetRepository<OTP>().DeleteAsync(otp.Id);
+                    await _unitOfWork.SaveAsync();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private async Task ScheduleOtpCancellation(string otpId, TimeSpan delay)
+        {
+            await Task.Delay(delay);
+
+            var otpRepository = _unitOfWork.GetRepository<OTP>();
+            var otp = await otpRepository.Entities.Where(o => o.Id == otpId).SingleOrDefaultAsync();
+
+            if (otp != null && otp.IsValid && DateTime.Now >= otp.ExpiredAt)
+            {
+                otp.IsValid = false;
+                await otpRepository.DeleteAsync(otp);
+                var saveResult = _unitOfWork.SaveAsync();
+            }
+        }
     }
 }

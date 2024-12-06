@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Repositories.ViewModel.ProblemVM;
 using SWD392.Manim.Repositories.ViewModel.TopicVM;
-using SWD392.Manim.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace SWD392.Manim.Services.Services
@@ -61,11 +61,12 @@ namespace SWD392.Manim.Services.Services
         }
         public async Task PostTopic(PostTopicVM model)
         {
-            //Topic? existedTopic = await _unitOfWork.GetRepository<Topic>().Entities.Where(s => s.Name == model.Name).FirstOrDefaultAsync();
-            //if (existedTopic != null)
-            //{
-            //    throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên chủ đề đã tồn tại!");
-            //}
+
+            Topic? existedTopic = await _unitOfWork.GetRepository<Topic>().Entities.Where(s => s.Name == model.Name && s.ChapterId == model.ChapterId).FirstOrDefaultAsync();
+            if (existedTopic != null)
+            {
+                throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên chủ đề đã tồn tại!");
+            }
             Topic topic = _mapper.Map<Topic>(model);
             topic.CreatedAt = DateTime.Now;
 
@@ -76,7 +77,14 @@ namespace SWD392.Manim.Services.Services
         public async Task PutTopic(string id, PostTopicVM model)
         {
             Topic? existedTopic = await _unitOfWork.GetRepository<Topic>().Entities.Where(s => s.Id == id && !s.DeletedAt.HasValue).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Chủ đề không tồn tại!");
-
+            if (existedTopic.Name != model.Name)
+            {
+                Topic? existedTopicName = await _unitOfWork.GetRepository<Topic>().Entities.Where(s => s.Name == model.Name && s.ChapterId == model.ChapterId).FirstOrDefaultAsync();
+                if (existedTopicName != null)
+                {
+                    throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Tên chủ đề đã tồn tại!");
+                }
+            }
             _mapper.Map(model, existedTopic);
             existedTopic.UpdatedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Topic>().UpdateAsync(existedTopic);
@@ -85,6 +93,18 @@ namespace SWD392.Manim.Services.Services
         public async Task DeleteTopic(string id)
         {
             Topic? existedTopic = await _unitOfWork.GetRepository<Topic>().GetByIdAsync(id) ?? throw new ErrorException(StatusCodes.Status404NotFound, ErrorCode.NotFound, "Chủ đề không tồn tại!");
+            List<Problem> problems = await _unitOfWork.GetRepository<Problem>().Entities.Where(s => s.TopicId == id && !s.DeletedAt.HasValue).ToListAsync();
+            foreach (Problem problem in problems)
+            {
+                problem.DeletedAt = DateTime.Now;
+                await _unitOfWork.GetRepository<Problem>().UpdateAsync(problem);
+                List<ProblemParameter> pp = await _unitOfWork.GetRepository<ProblemParameter>().Entities.Where(s => s.ProblemId == problem.Id && !s.DeletedAt.HasValue).ToListAsync();
+                foreach (ProblemParameter item in pp)
+                {
+                    item.DeletedAt = DateTime.Now;
+                    await _unitOfWork.GetRepository<Problem>().DeleteAsync(item);
+                }
+            }
             existedTopic.DeletedAt = DateTime.Now;
             await _unitOfWork.GetRepository<Topic>().UpdateAsync(existedTopic);
             await _unitOfWork.SaveAsync();

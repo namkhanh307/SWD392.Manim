@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.Paginate;
 using SWD392.Manim.Repositories.Repository.Interface;
 using System.Linq.Expressions;
 

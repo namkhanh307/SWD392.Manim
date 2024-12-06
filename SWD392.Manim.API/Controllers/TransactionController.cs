@@ -1,0 +1,38 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using SWD392.Manim.Repositories.ViewModel.SolutionVM;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Services.Services;
+using SWD392.Manim.Repositories.ViewModel.TransactionVM;
+
+namespace SWD392.Manim.API.Controllers
+{
+    [Route("api/transactions")]
+    [ApiController]
+
+
+    public class TransactionController(ITransactionService transactionService) : ControllerBase
+    {
+        public readonly ITransactionService _transactionService = transactionService;
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetTransactions(int index = 1, int pageSize = 10)
+        {
+            var result = await _transactionService.GetTransactions(index, pageSize);
+            return Ok(new BaseResponseModel<PaginatedList<GetTransactionsVM>?>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTransactionById(string id)
+        {
+            var result = await _transactionService.GetTransactionById(id);
+            return Ok(new BaseResponseModel<GetTransactionsVM>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+        }
+
+    }
+}

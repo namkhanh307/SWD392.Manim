@@ -10,4 +10,6 @@ public partial class Topic : BaseEntity
     public string ChapterId { get; set; } = string.Empty;
     public virtual Chapter? Chapter { get; set; }
     public virtual ICollection<Problem> Problems { get; set; } = new List<Problem>();
+    public virtual ICollection<Parameter> Parameters { get; set; } = new List<Parameter>();
+
 }

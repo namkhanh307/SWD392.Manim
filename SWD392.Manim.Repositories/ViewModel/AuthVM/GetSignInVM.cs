@@ -6,5 +6,6 @@ namespace SWD392.Manim.Repositories.ViewModel.AuthVM
     {
         public GetUserVM User { get; set; } = new GetUserVM();
         public GetTokenVM Token { get; set; } = new GetTokenVM();
+        public string Role { get; set; } = string.Empty;
     }
 }

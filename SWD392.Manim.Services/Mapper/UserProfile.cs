@@ -9,6 +9,8 @@ namespace SWD392.Manim.Services.Mapper
         public UserProfile()
         {
             CreateMap<ApplicationUser, GetUserVM>().ReverseMap();
+            CreateMap<ApplicationUser, PutUserVM>().ReverseMap();
+
         }
     }
 }

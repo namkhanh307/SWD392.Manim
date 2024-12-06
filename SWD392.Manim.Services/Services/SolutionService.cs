@@ -1,36 +1,43 @@
 ﻿using AutoMapper;
-using SWD392.Manim.Repositories.Repository.Interface;
 using Microsoft.AspNetCore.Http;
-using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.ViewModel.SolutionVM;
-using SWD392.Manim.Repositories;
 using Microsoft.EntityFrameworkCore;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Interface;
+using SWD392.Manim.Repositories.ViewModel.SolutionVM;
 
 namespace SWD392.Manim.Services.Services
 {
     public class SolutionService : ISolutionService
     {
         private readonly IMapper _mapper;
-        private IUnitOfWork _unitOfWork;
-        public SolutionService(IMapper mapper, IUnitOfWork unitOfWork)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _contextAccessor;
+
+        public SolutionService(IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor contextAccessor)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _contextAccessor = contextAccessor;
         }
-        public async Task<PaginatedList<GetSolutionsVM>?> GetSolutions(int index, int pageSize, string? id, string? nameSearch)
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_contextAccessor);
+        public async Task<PaginatedList<GetSolutionsVM>?> GetSolutions(int index, int pageSize, string? id, string? problemId, string? userId)
         {
-            IQueryable<Solution> query = _unitOfWork.GetRepository<Solution>().Entities.Where(s => !s.DeletedAt.HasValue);
+            IQueryable<Solution> query = _unitOfWork.GetRepository<Solution>().Entities.Where(s => !s.DeletedAt.HasValue).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(id))
             {
                 query = query.Where(lp => lp.Id.ToString().Contains(id));
             }
-
-            if (!string.IsNullOrWhiteSpace(nameSearch))
+            if (!string.IsNullOrWhiteSpace(problemId))
             {
-                query = query.Where(lp => lp.Name.Contains(nameSearch));
+                query = query.Where(lp => lp.ProblemId.ToString().Contains(problemId));
             }
-
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                query = query.Where(lp => lp.UserId.ToString().Contains(userId));
+            }
+            query = query.OrderByDescending(q => q.CreatedAt);
             var resultQuery = await _unitOfWork.GetRepository<Solution>().GetPagging(query, index, pageSize);
 
             var responseItems = resultQuery.Items.Select(item => _mapper.Map<GetSolutionsVM>(item)).ToList();
@@ -81,6 +88,16 @@ namespace SWD392.Manim.Services.Services
             await _unitOfWork.SaveAsync();
         }
 
-
+        public async Task<IEnumerable<GetSolutionsVM?>> GetSolutionByProblemId(string problemId)
+        {
+            Guid id;
+            Guid.TryParse(UserId, out id);
+            IEnumerable<Solution>? existedSolution = await _unitOfWork.GetRepository<Solution>().Entities.Where(s => s.UserId == id && s.ProblemId == problemId && !s.DeletedAt.HasValue).ToListAsync();
+            if (existedSolution == null)
+            {
+                throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Bạn chưa mua giải pháp nào!");
+            }
+            return _mapper.Map<IEnumerable<GetSolutionsVM?>>(existedSolution);
+        }
     }
 }

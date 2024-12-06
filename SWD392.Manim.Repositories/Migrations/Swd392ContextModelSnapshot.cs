@@ -417,7 +417,11 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProblemId")
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TopicId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -430,7 +434,7 @@ namespace SWD392.Manim.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProblemId");
+                    b.HasIndex("TopicId");
 
                     b.ToTable("Parameters", (string)null);
                 });
@@ -456,9 +460,15 @@ namespace SWD392.Manim.Repositories.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("TopicId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -497,88 +507,10 @@ namespace SWD392.Manim.Repositories.Migrations
 
                     b.HasIndex("ProblemId");
 
-                    b.ToTable("SolutionParameters", (string)null);
+                    b.ToTable("ProblemParameters", (string)null);
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Createdby")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("SolutionTypeId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SolutionTypeId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Solutions", (string)null);
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionOutput", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Createdby")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SolutionId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SolutionId")
-                        .IsUnique();
-
-                    b.ToTable("SolutionOutputs", (string)null);
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionType", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -607,11 +539,20 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProblemId");
 
-                    b.ToTable("SolutionTypes", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Solutions", (string)null);
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Subject", b =>
@@ -628,12 +569,13 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Status")
                         .HasColumnType("bit");
@@ -707,14 +649,17 @@ namespace SWD392.Manim.Repositories.Migrations
                     b.Property<string>("DepositId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("SolutionId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Username")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WalletId")
                         .HasColumnType("nvarchar(450)");
@@ -840,13 +785,13 @@ namespace SWD392.Manim.Repositories.Migrations
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Parameter", b =>
                 {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
-                        .WithMany()
-                        .HasForeignKey("ProblemId")
+                    b.HasOne("SWD392.Manim.Repositories.Entity.Topic", "Topic")
+                        .WithMany("Parameters")
+                        .HasForeignKey("TopicId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Problem");
+                    b.Navigation("Topic");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Problem", b =>
@@ -881,9 +826,9 @@ namespace SWD392.Manim.Repositories.Migrations
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
                 {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.SolutionType", "SolutionType")
-                        .WithOne("Solution")
-                        .HasForeignKey("SWD392.Manim.Repositories.Entity.Solution", "SolutionTypeId")
+                    b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
+                        .WithMany("Solutions")
+                        .HasForeignKey("ProblemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -893,31 +838,9 @@ namespace SWD392.Manim.Repositories.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("SolutionType");
+                    b.Navigation("Problem");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionOutput", b =>
-                {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Solution", "Solution")
-                        .WithOne("SolutionOutput")
-                        .HasForeignKey("SWD392.Manim.Repositories.Entity.SolutionOutput", "SolutionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Solution");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionType", b =>
-                {
-                    b.HasOne("SWD392.Manim.Repositories.Entity.Problem", "Problem")
-                        .WithMany("SolutionTypes")
-                        .HasForeignKey("ProblemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Problem");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Topic", b =>
@@ -989,19 +912,12 @@ namespace SWD392.Manim.Repositories.Migrations
                 {
                     b.Navigation("ProblemParameters");
 
-                    b.Navigation("SolutionTypes");
+                    b.Navigation("Solutions");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Solution", b =>
                 {
-                    b.Navigation("SolutionOutput");
-
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("SWD392.Manim.Repositories.Entity.SolutionType", b =>
-                {
-                    b.Navigation("Solution");
                 });
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Subject", b =>
@@ -1011,6 +927,8 @@ namespace SWD392.Manim.Repositories.Migrations
 
             modelBuilder.Entity("SWD392.Manim.Repositories.Entity.Topic", b =>
                 {
+                    b.Navigation("Parameters");
+
                     b.Navigation("Problems");
                 });
 

@@ -1,14 +1,13 @@
-﻿using SWD392.Manim.Repositories.Repository.Implement;
-using SWD392.Manim.Repositories.Repository.Interface;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using SWD392.Manim.Repositories.Entity;
 using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Repository.Implement;
+using SWD392.Manim.Repositories.Repository.Interface;
 using SWD392.Manim.Services.Mapper;
-using System.Reflection;
-using Microsoft.AspNetCore.Authentication.Google;
 using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Extensions
@@ -137,7 +136,7 @@ namespace SWD392.Manim.API.Extensions
             services.AddAutoMapper(typeof(SubjectProfile).Assembly);
             services.AddAutoMapper(typeof(TopicProfile).Assembly);
             services.AddAutoMapper(typeof(ParameterProfile).Assembly);
-
+            services.AddAutoMapper(typeof(TransactionProfile).Assembly);
         }
         public static void AddServices(this IServiceCollection services)
         {
@@ -170,6 +169,8 @@ namespace SWD392.Manim.API.Extensions
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ITopicService, TopicService>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<ITransactionService, TransactionService>();
+            services.AddScoped<IDashBoardService, DashBoardService>();
         }
 
         public static void SeedData(this IServiceCollection services)

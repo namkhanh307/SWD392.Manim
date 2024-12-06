@@ -7,7 +7,8 @@ namespace SWD392.Manim.Services.Services
     {
         Task DeleteSolution(string id);
         Task<GetSolutionsVM?> GetSolutionById(string id);
-        Task<PaginatedList<GetSolutionsVM>?> GetSolutions(int index, int pageSize, string? id, string? nameSearch);
+        Task<IEnumerable<GetSolutionsVM?>> GetSolutionByProblemId(string problemId);
+        Task<PaginatedList<GetSolutionsVM>?> GetSolutions(int index, int pageSize, string? id, string? problemId, string? userId);
         Task PostSolution(PostSolutionVM model);
         Task PutSolution(string id, PostSolutionVM model);
     }

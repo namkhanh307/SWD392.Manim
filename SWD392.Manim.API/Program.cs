@@ -1,25 +1,24 @@
+﻿using NLog.Web;
+using SWD392.Manim.API.Constants;
 using SWD392.Manim.API.Extensions;
 using SWD392.Manim.API.Middlewares;
-using SWD392.Manim.Repository.ViewModel.Wallet;
-using System.Text.Json.Serialization;
-using NLog.Web;
-using SWD392.Manim.API.Constants;
-using SWD392.Manim.Services.Services;
 using SWD392.Manim.Repositories.ViewModel.Email;
+using SWD392.Manim.Repository.ViewModel.Wallet;
+using SWD392.Manim.Services.Services;
+using System.Text.Json.Serialization;
 
 var logger = NLog.LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"))
     .GetCurrentClassLogger();
 try
 {
     var builder = WebApplication.CreateBuilder(args);
-
     builder.Logging.ClearProviders();
     builder.Host.UseNLog();
     // Add services to the container.
     builder.Services.AddCors(options =>
     {
         options.AddPolicy(name: CorsConstant.PolicyName,
-            policy => { policy.WithOrigins("*").AllowAnyHeader().AllowAnyMethod(); });
+            policy => { policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); });
     });
     builder.Services.AddControllers().AddJsonOptions(x =>
     {
@@ -63,7 +62,7 @@ try
     app.UseSwagger();
     app.UseAuthentication();
     app.UseAuthorization();
-    app.MapControllers(); 
+    app.MapControllers();
     app.Run();
 }
 catch (Exception exception)

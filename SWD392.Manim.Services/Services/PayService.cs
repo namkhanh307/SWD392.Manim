@@ -1,24 +1,20 @@
 ﻿using AutoMapper;
-using Net.payOS.Types;
-using Net.payOS;
-using SWD392.Manim.Repositories.Entity;
-using SWD392.Manim.Repositories.Repository.Interface;
-using SWD392.Manim.Repository.ViewModel.Wallet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Http;
-using SWD392.Manim.Repositories;
-using SWD392.Manim.Repositories.ViewModel.Wallet;
-using Newtonsoft.Json.Linq;
+using Net.payOS;
+using Net.payOS.Types;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SWD392.Manim.Repositories;
+using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.Enum;
+using SWD392.Manim.Repositories.Repository.Interface;
+using SWD392.Manim.Repositories.ViewModel.Wallet;
+using SWD392.Manim.Repository.ViewModel.Wallet;
+using System.Security.Cryptography;
+using System.Text;
 using Transaction = SWD392.Manim.Repositories.Entity.Transaction;
-using Microsoft.AspNetCore.Mvc;
 
 namespace SWD392.Manim.Services.Services
 {
@@ -40,14 +36,14 @@ namespace SWD392.Manim.Services.Services
             _httpContextAccessor = httpContextAccessor;
             _client = client;
         }
+        private string UserId => Authentication.GetUserIdFromHttpContextAccessor(_httpContextAccessor);
         public async Task<CreatePaymentResult> CreatePaymentUrlRegisterCreator(decimal balance)
         {
             try
             {
-                string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
                 Guid id;
                 ApplicationUser? user = null;
-                if (Guid.TryParse(userId, out id))
+                if (Guid.TryParse(UserId, out id))
                 {
                     user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
                 }
@@ -64,7 +60,8 @@ namespace SWD392.Manim.Services.Services
                 string buyerEmail = user.Email;
 
                 // Generate an order code and set the description
-                var orderCode = new Random().Next(1, 1000);
+                Random random = new Random();
+                long orderCode = (DateTime.Now.Ticks % 1000000000000000L) * 10 + random.Next(0, 1000); // Đảm bảo orderCode là duy nhất
                 var description = "VQRIO123";
                 var deposit = new Deposit()
                 {
@@ -77,14 +74,14 @@ namespace SWD392.Manim.Services.Services
                 };
                 // Create signature data
                 var signatureData = new Dictionary<string, object>
-                {
-                    { "amount", balance },
-                    { "cancelUrl", _payOSSettings.ReturnUrlFail },
-                    { "description", description },
-                    { "expiredAt", DateTimeOffset.Now.AddMinutes(10).ToUnixTimeSeconds() },
-                    { "orderCode", orderCode },
-                    { "returnUrl", _payOSSettings.ReturnUrl }
-                };
+            {
+                { "amount", balance },
+                { "cancelUrl", _payOSSettings.ReturnUrlFail },
+                { "description", description },
+                { "expiredAt", DateTimeOffset.Now.AddMinutes(10).ToUnixTimeSeconds() },
+                { "orderCode", orderCode },
+                { "returnUrl", _payOSSettings.ReturnUrl }
+            };
 
                 // Sort and compute the signature
                 var sortedSignatureData = new SortedDictionary<string, object>(signatureData);
@@ -109,6 +106,18 @@ namespace SWD392.Manim.Services.Services
                     buyerAddress: "HCM", // Nếu có
                     expiredAt: (int)expiredAt.ToUnixTimeSeconds()
                 );
+
+                Transaction transaction = new Transaction
+                {
+                    Amount = balance,
+                    BillingDate = DateTime.Now,
+                    DepositId = deposit.Id,
+                    CreatedAt = DateTime.Now,
+                    WalletId = wallet.Id,
+                    OrderCode = orderCode,
+                    Status = EnumStatus.Pending
+                };
+                await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
                 await _unitOfWork.GetRepository<Deposit>().InsertAsync(deposit);
                 await _unitOfWork.SaveAsync();
                 // Gọi API tạo thanh toán
@@ -123,74 +132,38 @@ namespace SWD392.Manim.Services.Services
             }
         }
 
-        //public async Task<ExtendedPaymentInfo> GetPaymentInfo(string paymentLinkId)
-        //{
-        //    try
-        //    {
-        //        var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{paymentLinkId}";
+        public async Task<bool> HandlePaymentCallback(string paymentLinkId, long orderCode)
+        {
+            try
+            {
+                // Lấy thông tin thanh toán
+                var paymentInfo = await GetPaymentInfo(paymentLinkId);
 
-        //        var request = new HttpRequestMessage(HttpMethod.Get, getUrl);
-        //        request.Headers.Add("x-client-id", _payOSSettings.ClientId);
-        //        request.Headers.Add("x-api-key", _payOSSettings.ApiKey);
+                // Nếu thanh toán thành công, cập nhật số dư ví
+                if (paymentInfo.Status == "PAID")
+                {
+                    var transaction = _unitOfWork.GetRepository<Transaction>().Entities.Where(t => t.OrderCode == orderCode && t.Status == EnumStatus.Pending).FirstOrDefault();
+                    if(transaction != null)
+                    {
+                        var wallet = _unitOfWork.GetRepository<Wallet>().Entities.Where(w => w.Id == transaction.WalletId).FirstOrDefault();
 
-        //        // Send the request
-        //        var response = await _client.SendAsync(request);
-
-        //        // Ensure the request is successful
-        //        response.EnsureSuccessStatusCode();
-
-        //        var responseContent = await response.Content.ReadAsStringAsync();
-
-        //        var responseObject = JsonConvert.DeserializeObject<JObject>(responseContent);
-        //        var paymentInfo = responseObject["data"].ToObject<ObjectPayment>();
-
-
-        //        string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
-        //        Guid id;
-        //        ApplicationUser? user = null;
-        //        if (Guid.TryParse(userId, out id))
-        //        {
-        //            user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
-
-        //        }
-        //        var wallet = await _unitOfWork.GetRepository<Wallet>()
-        //                          .Entities
-        //                          .Where(w => w.UserId == id)
-        //                          .FirstOrDefaultAsync();
-
-        //        int totalPrice = paymentInfo.Amount;
-
-        //        string buyerName = user.FullName;
-        //        string buyerPhone = user.PhoneNumber;
-        //        string buyerEmail = user.Email;
-
-        //        var extendedPaymentInfo = new ExtendedPaymentInfo
-        //        {
-        //            Amount = totalPrice,
-        //            Description = "VQRIO123",
-        //            BuyerName = buyerName,
-        //            BuyerPhone = buyerPhone,
-        //            BuyerEmail = buyerEmail,
-        //            Status = paymentInfo.Status,
-
-        //        };
-
-        //        // Update product status if payment is completed
-        //        if (paymentInfo.Status == "PAID")
-        //        {
-        //            wallet.Balance += totalPrice;
-        //        }
-
-        //        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
-        //        await _unitOfWork.SaveAsync();
-
-        //        return extendedPaymentInfo;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new BadHttpRequestException("An error occurred while getting payment info.", ex);
-        //    }
-        //}
+                        if (wallet != null)
+                        {
+                            wallet.Balance += paymentInfo.Amount;
+                            await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);                            
+                        }
+                        transaction.Status = EnumStatus.Complete;
+                        await _unitOfWork.SaveAsync();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while handling payment callback.", ex);
+            }
+        }
 
         public async Task<ObjectPayment> GetPaymentInfo(string paymentLinkId)
         {
@@ -216,53 +189,29 @@ namespace SWD392.Manim.Services.Services
             {
                 throw new Exception("An error occurred while getting payment info.", ex);
             }
+
         }
-        public async Task<bool> HandlePaymentCallback(string paymentLinkId)
-        {
-            try
-            {
-                // Lấy thông tin thanh toán
-                var paymentInfo = await GetPaymentInfo(paymentLinkId);
 
-                // Nếu thanh toán thành công, cập nhật số dư ví
-                if (paymentInfo.Status == "PAID")
-                {
-                    string userId = Authentication.GetUserIdFromHttpContext(_httpContextAccessor.HttpContext);
-                    Guid id;
-                    ApplicationUser? user = null;
-                    if (Guid.TryParse(userId, out id))
-                    {
-                        user = await _unitOfWork.GetRepository<ApplicationUser>().Entities.Where(u => u.Id.Equals(id)).FirstOrDefaultAsync();
-
-                    }
-                    var wallet = await _unitOfWork.GetRepository<Wallet>()
-                                  .Entities
-                                  .Where(w => w.UserId == id)
-                                  .FirstOrDefaultAsync();
-
-                    if (wallet != null)
-                    {
-                        wallet.Balance += paymentInfo.Amount;
-                        await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
-                        await _unitOfWork.SaveAsync();
-                        return true;
-                    }
-                }
-                return false;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while handling payment callback.", ex);
-            }
-        } 
-
-            private string? ComputeHmacSha256(string data, string checksumKey)
+        private string? ComputeHmacSha256(string data, string checksumKey)
         {
             using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(checksumKey)))
             {
                 var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
                 return BitConverter.ToString(hash).Replace("-", "").ToLower();
             }
+        }
+
+        public async Task<GetWalletVM> GetWallet()
+        {
+            Guid id;
+            Guid.TryParse(UserId, out id);
+            Wallet? wallet = await _unitOfWork.GetRepository<Wallet>().Entities.Where(r => r.UserId == id).FirstOrDefaultAsync() ?? throw new ErrorException(StatusCodes.Status409Conflict, ErrorCode.Conflicted, "Ví không tồn tại");
+            return new GetWalletVM()
+            {
+                Balance = wallet.Balance,
+                FullName = wallet.User != null ? wallet.User.FullName! : "Người dùng ẩn danh"
+            };
+
         }
     }
 }

@@ -1,20 +1,20 @@
-﻿using SWD392.Manim.Repositories;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using SWD392.Manim.Repositories;
 using SWD392.Manim.Repositories.ViewModel.ParameterVM;
 using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Controllers
 {
-    [Route("api/parameter")]
+    [Route("api/parameters")]
     [ApiController]
     public class ParametersController(IParameterService parameterService) : ControllerBase
     {
         public readonly IParameterService _parameterService = parameterService;
 
         [HttpGet]
-        public async Task<IActionResult> GetParameters(int index = 1, int pageSize = 10, string? id = null, string? nameSearch = null)
+        public async Task<IActionResult> GetParameters(int index = 1, int pageSize = 10, string? id = null, string? nameSearch = null, string? topicId = null)
         {
-            var result = await _parameterService.GetParameters(index, pageSize, id, nameSearch);
+            var result = await _parameterService.GetParameters(index, pageSize, id, nameSearch, topicId);
             return Ok(new BaseResponseModel<PaginatedList<GetParametersVM>?>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,
@@ -30,9 +30,9 @@ namespace SWD392.Manim.API.Controllers
                 data: result));
         }
         [HttpPost]
-        public async Task<IActionResult> PostParameter(PostParameterVM model, string problemTypeId)
+        public async Task<IActionResult> PostParameter(PostParameterVM model)
         {
-            await _parameterService.PostParameter(model, problemTypeId);
+            await _parameterService.PostParameter(model);
             return Ok(new BaseResponseModel<string>(
                 statusCode: StatusCodes.Status200OK,
                 code: ResponseCodeConstants.SUCCESS,

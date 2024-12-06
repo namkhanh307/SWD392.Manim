@@ -1,18 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Net.payOS.Types;
 using SWD392.Manim.Repositories;
-using SWD392.Manim.Repositories.Entity;
+using SWD392.Manim.Repositories.ViewModel.Wallet;
 using SWD392.Manim.Services.Services;
 
 namespace SWD392.Manim.API.Controllers
 {
-    [Route("api/wallet")]
+    [Route("api/wallets")]
     [ApiController]
     public class WalletController(IPayService payService) : ControllerBase
     {
         private readonly IPayService _payService = payService;
 
-        [HttpPost("/create")]
+        [HttpGet]
+        public async Task<IActionResult> GetWallet()
+        {
+            var result = await _payService.GetWallet();
+            return Ok(new BaseResponseModel<GetWalletVM>(
+                statusCode: StatusCodes.Status200OK,
+                code: ResponseCodeConstants.SUCCESS,
+                data: result));
+        }
+        [HttpPost("create")]
         public async Task<IActionResult> CreatePaymentUrl([FromQuery] decimal balance)
         {
             try
@@ -27,41 +36,37 @@ namespace SWD392.Manim.API.Controllers
             }
         }
 
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetPayment([FromRoute] string id)
-        //{
-        //    try
-        //    {
-        //        var result = await _payService.GetPaymentInfo(id);
-
-        //        return Ok(result);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Problem("Thất bại");
-        //    }
-        //}
-
-        [HttpGet("callback/{paymentLinkId}")]
-        public async Task<IActionResult> PaymentCallback([FromRoute] string paymentLinkId)
+        [HttpGet("ReturnUrl")]
+        public async Task<IActionResult> ReturnUrl()
         {
-            try
-            {
-                // Gọi service để xử lý callback thanh toán
-                var result = await _payService.HandlePaymentCallback(paymentLinkId);
+            // Lấy các tham số từ query string
+            string responseCode = Request.Query["code"].ToString();
+            string id = Request.Query["id"].ToString();
+            string cancel = Request.Query["cancel"].ToString();
+            string status = Request.Query["status"].ToString();
+            string orderCode = Request.Query["orderCode"];
 
-                if (result)
+            if (responseCode == "00" && status == "PAID") // Thanh toán thành công
+            {
+                try
                 {
-                    return Ok(new { message = "Wallet balance updated successfully." });
+                    // Gọi service để cộng tiền vào ví
+
+                    bool isSuccess = await _payService.HandlePaymentCallback(id, long.Parse(orderCode));
+                    return Content($"Thanh toán thành công. Mã giao dịch: {orderCode}. Đã cộng tiền vào ví.");
                 }
-                else
+                catch (Exception ex)
                 {
-                    return BadRequest(new { message = "Payment not completed or wallet not found." });
+                    return Problem("Đã xảy ra lỗi: " + ex.Message);
                 }
             }
-            catch (Exception ex)
+            else if (status == "CANCELLED")
             {
-                return Problem("An error occurred while processing payment callback.");
+                return Content("Thanh toán đã bị hủy.");
+            }
+            else
+            {
+                return Content($"Thanh toán không thành công. Mã trạng thái: {responseCode}");
             }
         }
     }
